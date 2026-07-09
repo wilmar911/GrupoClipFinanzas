@@ -112,9 +112,11 @@ td{padding:9px 8px;border-bottom:1px solid var(--border);font-variant-numeric:ta
 .tabbar button.on{color:var(--accent)}
 .page{display:none}.page.on{display:block}
 .canvasbox{position:relative;height:260px;margin-top:6px}
-.costrow{display:grid;grid-template-columns:1fr 120px;gap:8px;align-items:center;margin-bottom:8px}
-.costrow input{border:1px solid var(--border);background:var(--input);color:var(--text);border-radius:9px;padding:8px 10px;font-size:14px;font-family:inherit;text-align:right}
-.costrow .nm{font-size:13px}
+.costrow{display:grid;grid-template-columns:1fr 106px 30px;gap:7px;align-items:center;margin-bottom:8px}
+.costrow input{border:1px solid var(--border);background:var(--input);color:var(--text);border-radius:9px;padding:8px 10px;font-size:14px;font-family:inherit}
+.costrow input.amt{text-align:right}
+.costrow .del{border:0;background:var(--redbg);color:var(--red);border-radius:8px;height:32px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+.costrow .lock{border:0;background:transparent;color:var(--text2);font-size:13px;text-align:center}
 .badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;background:var(--input);color:var(--text2);margin-left:6px}
 .note{background:var(--card2);border:1px dashed var(--border);border-radius:12px;padding:10px 12px;font-size:12.5px;color:var(--text2);margin-bottom:14px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(95px + env(safe-area-inset-bottom));
@@ -322,11 +324,13 @@ header.app h1{background:linear-gradient(90deg,var(--blue),var(--indigo),var(--p
   </div>
   <div class="card">
     <h2>Costos fijos mensuales <span class="badge">sin sueldos de socios</span></h2>
+    <p class="muted" style="margin-bottom:10px">Toca el nombre o el monto para editarlos. ✕ elimina el costo.</p>
     <div id="costList"></div>
-    <div class="row" style="border-top:2px solid var(--border);margin-top:6px">
+    <button class="btn sec" style="margin-top:4px" onclick="addCost()">＋ Agregar costo fijo</button>
+    <div class="row" style="border-top:2px solid var(--border);margin-top:10px">
       <span class="k" style="font-weight:700">Total costos fijos</span><span class="v" id="costTotal"></span>
     </div>
-    <p class="muted" style="margin-top:8px">✏️ <b>Pauta</b> y <b>Fulfillment</b> se editan cada mes. Los sueldos de socios NO van aquí: son el resultado del negocio.</p>
+    <p class="muted" style="margin-top:8px">✏️ <b>Pauta</b> y <b>Fulfillment</b> se editan cada mes (también desde Calcular) y no se pueden eliminar porque el modelo los usa. Los sueldos de socios NO van aquí: son el resultado del negocio.</p>
   </div>
   <div class="card">
     <h2>Uso en tus dispositivos Apple</h2>
@@ -689,14 +693,25 @@ function renderCfg(){
   document.getElementById('cfgTC').value=cfg.tc;
   document.getElementById('cfgInt').value=cfg.interes;
   document.getElementById('cfgTicket').value=cfg.ticket||421;
+  const fixed=['pauta','fulfill'];
   document.getElementById('costList').innerHTML=cfg.costos.map((c,i)=>
-    `<div class="costrow"><span class="nm">${c.n}</span>
-     <input type="number" inputmode="decimal" value="${c.m}" onchange="setCost(${i},this.value)"></div>`).join('');
+    `<div class="costrow">
+     <input type="text" value="${(c.n||'').replace(/"/g,'&quot;')}" oninput="setCostName(${i},this.value)">
+     <input type="number" class="amt" inputmode="decimal" value="${c.m}" oninput="setCost(${i},this.value)">
+     ${fixed.includes(c.id)?'<span class="lock" title="Requerido por el modelo">🔒</span>':`<button class="del" onclick="delCost(${i})">✕</button>`}
+    </div>`).join('');
   document.getElementById('costTotal').textContent=fmtQ(fijosTotal());
 }
-function setCost(i,v){ cfg.costos[i].m=parseFloat(v)||0; persist();
+function afterCostChange(){ persist();
   document.getElementById('costTotal').textContent=fmtQ(fijosTotal());
   renderQuickCosts(); calcM1(); calcM2(); renderKPIs(); }
+function setCost(i,v){ cfg.costos[i].m=parseFloat(v)||0; afterCostChange(); }
+function setCostName(i,v){ cfg.costos[i].n=v; persist(); }
+function addCost(){ cfg.costos.push({id:'c'+Date.now(), n:'Nuevo costo', m:0});
+  persist(); renderCfg(); }
+function delCost(i){ const c=cfg.costos[i];
+  if(!confirm('¿Eliminar "'+c.n+'" ('+fmtQ(c.m)+') de los costos fijos?'))return;
+  cfg.costos.splice(i,1); renderCfg(); afterCostChange(); }
 function saveCfgField(f,v){ cfg[f]=parseFloat(v)||0; persist(); renderKPIs(); }
 function resetAll(){
   if(!confirm('Esto borra TODOS los datos locales (archivo y ajustes). ¿Continuar?'))return;
