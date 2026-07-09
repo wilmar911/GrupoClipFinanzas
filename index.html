@@ -186,11 +186,13 @@ header.app h1{background:linear-gradient(90deg,var(--blue),var(--indigo),var(--p
 <div class="page on" id="page-calc">
   <div class="card">
     <h2>Costos del mes <span class="badge">edítalos aquí cada mes</span></h2>
-    <div class="grid2">
-      <div class="field"><label>📣 Pauta del mes (Q)</label><input type="number" inputmode="decimal" id="qcPauta" oninput="setCostQuick('pauta',this.value)"></div>
+    <div class="grid3">
+      <div class="field"><label>📣 Pauta del mes ($ USD)</label><input type="number" inputmode="decimal" id="qcPautaUSD" oninput="qcUsd(this.value)" placeholder="Facebook Ads"></div>
+      <div class="field"><label>📣 Pauta del mes (Q)</label><input type="number" inputmode="decimal" id="qcPauta" oninput="syncPauta(this.value,'qcPauta')"></div>
       <div class="field"><label>📦 Fulfillment GUAVEN (Q)</label><input type="number" inputmode="decimal" id="qcFulfill" oninput="setCostQuick('fulfill',this.value)"></div>
     </div>
     <div class="row"><span class="k" style="font-weight:700">Total costos fijos del mes</span><span class="v" id="qcTotal"></span></div>
+    <p class="muted" style="margin-top:6px">💱 Si pones la pauta en USD la convierto a Q con el tipo de cambio de Ajustes (<span id="qcTC"></span>). 🔁 Pauta, ventas y BB se sincronizan solos con la pestaña KPIs.</p>
   </div>
   <div class="seg">
     <button id="segM1" class="on" onclick="setMode(1)">¿Cuánto necesito vender?</button>
@@ -202,7 +204,7 @@ header.app h1{background:linear-gradient(90deg,var(--blue),var(--indigo),var(--p
       <h2>Modo 1 · Meta de ventas</h2>
       <div class="grid2">
         <div class="field"><label>Sueldo deseado por socio (Q)</label><input type="number" inputmode="decimal" id="m1sueldo" value="10000" oninput="calcM1()"></div>
-        <div class="field"><label>Ventas reales del mes (Q, opcional)</label><input type="number" inputmode="decimal" id="m1ventas" placeholder="Para comparar" oninput="calcM1()"></div>
+        <div class="field"><label>Ventas reales del mes (Q, opcional)</label><input type="number" inputmode="decimal" id="m1ventas" placeholder="Para comparar" oninput="syncVentas(this.value,'m1ventas')"></div>
       </div>
       <div id="m1out"></div>
     </div>
@@ -213,8 +215,8 @@ header.app h1{background:linear-gradient(90deg,var(--blue),var(--indigo),var(--p
       <h2>Modo 2 · ¿Cuánto ganamos?</h2>
       <p class="muted" style="margin-bottom:10px">Ingresa tus <b>ventas del mes</b>, tu <b>beneficio bruto real</b> de Zoho (base efectivo), o ambos. Con BB real el cálculo es exacto; solo con ventas se estima con el margen estándar.</p>
       <div class="grid2">
-        <div class="field"><label>Ventas del mes (Q)</label><input type="number" inputmode="decimal" id="m2ventas" placeholder="Ej. 60000" oninput="calcM2()"></div>
-        <div class="field"><label>Beneficio bruto real (Q) · Zoho efectivo</label><input type="number" inputmode="decimal" id="m2bb" placeholder="Opcional, más exacto" oninput="calcM2()"></div>
+        <div class="field"><label>Ventas del mes (Q)</label><input type="number" inputmode="decimal" id="m2ventas" placeholder="Ej. 60000" oninput="syncVentas(this.value,'m2ventas')"></div>
+        <div class="field"><label>Beneficio bruto real (Q) · Zoho efectivo</label><input type="number" inputmode="decimal" id="m2bb" placeholder="Opcional, más exacto" oninput="syncBB(this.value,'m2bb')"></div>
       </div>
       <div id="m2out"></div>
     </div>
@@ -235,10 +237,10 @@ header.app h1{background:linear-gradient(90deg,var(--blue),var(--indigo),var(--p
     <div class="grid2">
       <div class="field"><label>Mes</label><input type="month" id="inMes"></div>
       <div class="field"><label>Sueldo deseado por socio (Q)</label><input type="number" inputmode="decimal" id="inSueldo" value="10000" oninput="renderKPIs()"></div>
-      <div class="field"><label>Ventas totales (Q) · acumulación</label><input type="number" inputmode="decimal" id="inVentas" oninput="renderKPIs()"></div>
-      <div class="field"><label>Beneficio bruto real (Q) · efectivo</label><input type="number" inputmode="decimal" id="inBB" oninput="renderKPIs()"></div>
+      <div class="field"><label>Ventas totales (Q) · acumulación 🔁</label><input type="number" inputmode="decimal" id="inVentas" oninput="syncVentas(this.value,'inVentas')"></div>
+      <div class="field"><label>Beneficio bruto real (Q) · efectivo 🔁</label><input type="number" inputmode="decimal" id="inBB" oninput="syncBB(this.value,'inBB')"></div>
       <div class="field"><label>Ventas de redes (Q)</label><input type="number" inputmode="decimal" id="inRedes" oninput="renderKPIs()"></div>
-      <div class="field"><label>Pauta del mes (Q)</label><input type="number" inputmode="decimal" id="inPauta" oninput="renderKPIs()"></div>
+      <div class="field"><label>Pauta del mes (Q) 🔁</label><input type="number" inputmode="decimal" id="inPauta" oninput="syncPauta(this.value,'inPauta')"></div>
       <div class="field"><label>Pauta en USD (opcional)</label><input type="number" inputmode="decimal" id="inPautaUSD" oninput="usd2q()" placeholder="Convierte con TC"></div>
       <div class="field"><label>Capital adicional invertido (Q)</label><input type="number" inputmode="decimal" id="inCapital" value="0" oninput="renderKPIs()"></div>
       <div class="field"><label>Clientes nuevos</label><input type="number" inputmode="numeric" id="inClientes" oninput="renderKPIs()"></div>
@@ -560,6 +562,7 @@ function renderQuickCosts(){
   document.getElementById('qcPauta').value=g('pauta')?g('pauta').m:'';
   document.getElementById('qcFulfill').value=g('fulfill')?g('fulfill').m:'';
   document.getElementById('qcTotal').textContent=fmtQ(fijosTotal());
+  const t=document.getElementById('qcTC'); if(t)t.textContent='Q'+fmtN(cfg.tc,2)+' por $1';
 }
 function refreshAssumpOnly(){
   const cm=contribMargin();
@@ -595,8 +598,29 @@ function readInputs(){
     cogs:num('inCOGS'), inv:num('inInv'), cxc:num('inCXC'), credito:num('inCredito'),
     bancos:num('inBancos'), nota:document.getElementById('inNota').value||'' };
 }
-function usd2q(){ const u=num('inPautaUSD'); if(u!=null){
-  document.getElementById('inPauta').value=(u*cfg.tc).toFixed(2); renderKPIs(); } }
+/* ---------- sincronización Calcular ↔ KPIs ---------- */
+function syncVentas(v,from){
+  ['m1ventas','m2ventas','inVentas'].forEach(id=>{const e=document.getElementById(id);if(e&&id!==from)e.value=v;});
+  calcM1(); calcM2(); renderKPIs();
+}
+function syncBB(v,from){
+  ['m2bb','inBB'].forEach(id=>{const e=document.getElementById(id);if(e&&id!==from)e.value=v;});
+  calcM2(); renderKPIs();
+}
+function syncPauta(v,from){
+  const c=cfg.costos.find(x=>x.id==='pauta');
+  if(c){ c.m=parseFloat(v)||0; persist(); }
+  ['qcPauta','inPauta'].forEach(id=>{const e=document.getElementById(id);if(e&&id!==from)e.value=v;});
+  const t1=document.getElementById('qcTotal'); if(t1)t1.textContent=fmtQ(fijosTotal());
+  const t2=document.getElementById('costTotal'); if(t2)t2.textContent=fmtQ(fijosTotal());
+  refreshAssumpOnly(); calcM1(); calcM2(); renderKPIs();
+}
+function qcUsd(v){ const u=parseFloat(v); if(isNaN(u))return;
+  const e=document.getElementById('inPautaUSD'); if(e)e.value=v;
+  syncPauta((u*cfg.tc).toFixed(2),'ninguno'); }
+function usd2q(){ const u=num('inPautaUSD'); if(u==null)return;
+  const e=document.getElementById('qcPautaUSD'); if(e)e.value=u;
+  syncPauta((u*cfg.tc).toFixed(2),'ninguno'); }
 function renderKPIs(){
   const inp=readInputs(), k=computeKPIs(inp,cfg), r=resultadoReal(inp,cfg);
   let h='';
@@ -657,6 +681,10 @@ function loadMonth(m){
   set('inRedes',i.redes); set('inPauta',i.pauta); set('inPautaUSD','');
   set('inCapital',i.capital||0); set('inClientes',i.clientes); set('inCOGS',i.cogs);
   set('inInv',i.inv); set('inCXC',i.cxc); set('inCredito',i.credito); set('inBancos',i.bancos); set('inNota',s.nota||'');
+  // espejo hacia la pestaña Calcular
+  if(i.pauta!=null) syncPauta(i.pauta,'ninguno');
+  syncVentas(i.ventas==null?'':i.ventas,'inVentas');
+  syncBB(i.bb==null?'':i.bb,'inBB');
   go('kpi'); renderKPIs(); toast('📂 '+mesLabel(m)+' cargado en KPIs');
 }
 function delMonth(m){
@@ -712,7 +740,7 @@ function addCost(){ cfg.costos.push({id:'c'+Date.now(), n:'Nuevo costo', m:0});
 function delCost(i){ const c=cfg.costos[i];
   if(!confirm('¿Eliminar "'+c.n+'" ('+fmtQ(c.m)+') de los costos fijos?'))return;
   cfg.costos.splice(i,1); renderCfg(); afterCostChange(); }
-function saveCfgField(f,v){ cfg[f]=parseFloat(v)||0; persist(); renderKPIs(); }
+function saveCfgField(f,v){ cfg[f]=parseFloat(v)||0; persist(); renderQuickCosts(); refreshAssumpOnly(); calcM1(); calcM2(); renderKPIs(); }
 function resetAll(){
   if(!confirm('Esto borra TODOS los datos locales (archivo y ajustes). ¿Continuar?'))return;
   localStorage.removeItem(LS_CFG); localStorage.removeItem(LS_ARCH); localStorage.removeItem(LS_SEED);
@@ -893,6 +921,9 @@ function init(){
   const now=new Date();
   document.getElementById('inMes').value=ym(now);
   renderAssump(); renderKPIs(); renderCfg(); renderArch(); renderFilterChips();
+  // la pauta de KPIs arranca sincronizada con la de Calcular
+  const pc=cfg.costos.find(x=>x.id==='pauta');
+  if(pc && !document.getElementById('inPauta').value){ document.getElementById('inPauta').value=pc.m; renderKPIs(); }
   if(window.matchMedia){ window.matchMedia('(prefers-color-scheme: dark)')
     .addEventListener('change',()=>{ if(theme==='auto') applyTheme(); }); }
 }
