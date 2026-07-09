@@ -195,8 +195,9 @@ header.app h1{background:linear-gradient(90deg,var(--blue),var(--indigo),var(--p
     <p class="muted" style="margin-top:6px">💱 Si pones la pauta en USD la convierto a Q con el tipo de cambio de Ajustes (<span id="qcTC"></span>). 🔁 Pauta, ventas y BB se sincronizan solos con la pestaña KPIs.</p>
   </div>
   <div class="seg">
-    <button id="segM1" class="on" onclick="setMode(1)">¿Cuánto necesito vender?</button>
-    <button id="segM2" onclick="setMode(2)">Tengo mis ventas, ¿cuánto gano?</button>
+    <button id="segM1" class="on" onclick="setMode(1)">¿Cuánto vender?</button>
+    <button id="segM2" onclick="setMode(2)">¿Cuánto gano?</button>
+    <button id="segM3" onclick="setMode(3)">Reparto %</button>
   </div>
 
   <div id="mode1">
@@ -217,8 +218,42 @@ header.app h1{background:linear-gradient(90deg,var(--blue),var(--indigo),var(--p
       <div class="grid2">
         <div class="field"><label>Ventas del mes (Q)</label><input type="number" inputmode="decimal" id="m2ventas" placeholder="Ej. 60000" oninput="syncVentas(this.value,'m2ventas')"></div>
         <div class="field"><label>Beneficio bruto real (Q) · Zoho efectivo</label><input type="number" inputmode="decimal" id="m2bb" placeholder="Opcional, más exacto" oninput="syncBB(this.value,'m2bb')"></div>
+        <div class="field"><label>Comisiones reales del mes (Q) 🔁</label><input type="number" inputmode="decimal" id="m2comis" placeholder="Si vacío, estimo 5.6%" oninput="syncComis(this.value,'m2comis')"></div>
       </div>
       <div id="m2out"></div>
+    </div>
+  </div>
+
+  <div id="mode3" style="display:none">
+    <div class="card">
+      <h2>Opción B · Reparto % de la ganancia neta</h2>
+      <p class="muted" style="margin-bottom:10px">Tu método del Excel: <b>Ganancia neta = Beneficio bruto − Pauta</b>. Cada bolsa recibe su % y Compensación se reparte 50/50 entre socios. Abajo te muestro si las bolsas alcanzan para tus costos reales y la comparación con el método residual.</p>
+      <div class="grid2">
+        <div class="field"><label>Beneficio bruto (Q) 🔁</label><input type="number" inputmode="decimal" id="m3bb" oninput="syncBB(this.value,'m3bb')"></div>
+        <div class="field"><label>Pauta del mes (Q) 🔁</label><input type="number" inputmode="decimal" id="m3pauta" oninput="syncPauta(this.value,'m3pauta')"></div>
+      </div>
+      <div id="m3out"></div>
+    </div>
+    <div class="card">
+      <h2>Porcentajes del reparto <span class="badge">editables · deben sumar 100%</span></h2>
+      <div id="m3pcts"></div>
+    </div>
+    <div class="card">
+      <h2>🏦 Banco de dividendos</h2>
+      <p class="muted" style="margin-bottom:8px">Aquí se acumula el % de dividendos de cada mes. Cuando los repartan, registra el pago; el saldo pendiente y todo el historial quedan guardados (y viajan en el respaldo JSON).</p>
+      <div class="row"><span class="k" style="font-weight:700">Saldo pendiente por repartir</span><span class="v big" id="divSaldo"></span></div>
+      <button class="btn" style="margin-top:10px" id="divMesBtn" onclick="divAccrueMonth()">📥 Acumular dividendo del cálculo actual</button>
+      <h3>Movimiento manual</h3>
+      <div class="grid2">
+        <div class="field"><label>Monto (Q)</label><input type="number" inputmode="decimal" id="divMonto"></div>
+        <div class="field"><label>Nota (ej. "jun 2026", "pago a socios")</label><input type="text" id="divNota"></div>
+      </div>
+      <div class="grid2">
+        <button class="btn sec" onclick="divAdd('acumulado')">➕ Acumular</button>
+        <button class="btn sec" onclick="divAdd('pago')">➖ Registrar pago</button>
+      </div>
+      <h3>Historial</h3>
+      <div class="tablewrap"><table id="divTable"></table></div>
     </div>
   </div>
 
@@ -240,6 +275,7 @@ header.app h1{background:linear-gradient(90deg,var(--blue),var(--indigo),var(--p
       <div class="field"><label>Ventas totales (Q) · acumulación 🔁</label><input type="number" inputmode="decimal" id="inVentas" oninput="syncVentas(this.value,'inVentas')"></div>
       <div class="field"><label>Beneficio bruto real (Q) · efectivo 🔁</label><input type="number" inputmode="decimal" id="inBB" oninput="syncBB(this.value,'inBB')"></div>
       <div class="field"><label>Ventas de redes (Q)</label><input type="number" inputmode="decimal" id="inRedes" oninput="renderKPIs()"></div>
+      <div class="field"><label>Comisiones reales (Q) 🔁</label><input type="number" inputmode="decimal" id="inComis" placeholder="Si vacío, estimo 5.6%" oninput="syncComis(this.value,'inComis')"></div>
       <div class="field"><label>Pauta del mes (Q) 🔁</label><input type="number" inputmode="decimal" id="inPauta" oninput="syncPauta(this.value,'inPauta')"></div>
       <div class="field"><label>Pauta en USD (opcional)</label><input type="number" inputmode="decimal" id="inPautaUSD" oninput="usd2q()" placeholder="Convierte con TC"></div>
       <div class="field"><label>Capital adicional invertido (Q)</label><input type="number" inputmode="decimal" id="inCapital" value="0" oninput="renderKPIs()"></div>
@@ -420,7 +456,7 @@ function resultadoDeVentas(ventas, fijos, c=cfg){
 function resultadoReal(inp, c){
   if(inp.bb==null) return null;
   const fijos = fijosSinPauta(c) + (inp.pauta||0);
-  const comisiones = (inp.redes||0)*c.comision/100;
+  const comisiones = inp.comis!=null ? inp.comis : (inp.redes||0)*c.comision/100;
   const disponible = inp.bb - comisiones - fijos;
   const reserva = disponible>0 ? disponible*c.reserva/100 : 0;
   const resultado = disponible - reserva;
@@ -488,10 +524,10 @@ function go(p){
 /* ---------- calculadora ---------- */
 let mode=1;
 function setMode(m){mode=m;
-  document.getElementById('segM1').classList.toggle('on',m===1);
-  document.getElementById('segM2').classList.toggle('on',m===2);
-  document.getElementById('mode1').style.display=m===1?'':'none';
-  document.getElementById('mode2').style.display=m===2?'':'none';
+  [[1,'segM1','mode1'],[2,'segM2','mode2'],[3,'segM3','mode3']].forEach(([n,s,d])=>{
+    document.getElementById(s).classList.toggle('on',m===n);
+    document.getElementById(d).style.display=m===n?'':'none';});
+  if(m===3)calcM3();
 }
 function calcM1(){
   const sueldo=num('m1sueldo')||0, ventas=num('m1ventas');
@@ -521,14 +557,19 @@ function calcM2(){
   if(ventas==null&&bb==null){el.innerHTML='<p class="muted">Ingresa tus ventas del mes o tu beneficio bruto real.</p>';return;}
   const fijos=fijosTotal();
   let mc, mcRows='';
+  const comisReal=num('m2comis');
   if(bb!=null){
-    // BB real de Zoho: restar comisiones (5.6% efectivo) porque Zoho no las incluye en el BB
+    // BB real de Zoho: restar comisiones (reales si las diste, o estimadas 5.6%) porque Zoho no las incluye en el BB
     const ventasBase = ventas!=null ? ventas : (cfg.margen>0 ? bb/(cfg.margen/100) : 0);
-    const comis = ventasBase*cfg.comision/100;
+    const comis = comisReal!=null ? comisReal : ventasBase*cfg.comision/100;
     mc = bb - comis;
     mcRows+=`<div class="row"><span class="k">Beneficio bruto real (Zoho, efectivo)</span><span class="v">${fmtQ(bb)}</span></div>`;
-    mcRows+=`<div class="row"><span class="k">(−) Comisiones ${fmtN(cfg.comision,1)}% ${ventas!=null?'sobre ventas':'sobre ventas estimadas '+fmtQ(ventasBase)}</span><span class="v">${fmtQ(-comis)}</span></div>`;
+    mcRows+=`<div class="row"><span class="k">${comisReal!=null?'(−) Comisiones reales del mes':'(−) Comisiones estimadas '+fmtN(cfg.comision,1)+'% '+(ventas!=null?'sobre ventas':'sobre ventas estimadas '+fmtQ(ventasBase))}</span><span class="v">${fmtQ(-comis)}</span></div>`;
     mcRows+=`<div class="row"><span class="k">Margen de contribución real</span><span class="v">${fmtQ(mc)}</span></div>`;
+  } else if(comisReal!=null){
+    mc = ventas*cfg.margen/100 - comisReal;
+    mcRows+=`<div class="row"><span class="k">Margen bruto estimado (${fmtN(cfg.margen,0)}%)</span><span class="v">${fmtQ(ventas*cfg.margen/100)}</span></div>`;
+    mcRows+=`<div class="row"><span class="k">(−) Comisiones reales del mes</span><span class="v">${fmtQ(-comisReal)}</span></div>`;
   } else {
     mc = ventas*contribMargin();
     mcRows+=`<div class="row"><span class="k">Margen de contribución estimado (${fmtN(contribMargin()*100,1)}%)</span><span class="v">${fmtQ(mc)}</span></div>`;
@@ -575,7 +616,7 @@ function refreshAssumpOnly(){
     <div class="row"><span class="k">ROAS mínimo rentable</span><span class="v">${fmtN(1/cm,2)}x</span></div>`;
 }
 function renderAssump(){
-  refreshAssumpOnly(); renderQuickCosts(); calcM1(); calcM2();
+  refreshAssumpOnly(); renderQuickCosts(); calcM1(); calcM2(); calcM3();
 }
 /* ================= KPIs ================= */
 const KPI_DEFS=[
@@ -594,6 +635,7 @@ const KPI_DEFS=[
 function readInputs(){
   return { mes:document.getElementById('inMes').value||null,
     sueldo:num('inSueldo'), ventas:num('inVentas'), bb:num('inBB'), redes:num('inRedes'),
+    comis:num('inComis'),
     pauta:num('inPauta'), capital:num('inCapital')||0, clientes:num('inClientes'),
     cogs:num('inCOGS'), inv:num('inInv'), cxc:num('inCXC'), credito:num('inCredito'),
     bancos:num('inBancos'), nota:document.getElementById('inNota').value||'' };
@@ -604,16 +646,20 @@ function syncVentas(v,from){
   calcM1(); calcM2(); renderKPIs();
 }
 function syncBB(v,from){
-  ['m2bb','inBB'].forEach(id=>{const e=document.getElementById(id);if(e&&id!==from)e.value=v;});
-  calcM2(); renderKPIs();
+  ['m2bb','inBB','m3bb'].forEach(id=>{const e=document.getElementById(id);if(e&&id!==from)e.value=v;});
+  calcM2(); renderKPIs(); calcM3(false);
 }
 function syncPauta(v,from){
   const c=cfg.costos.find(x=>x.id==='pauta');
   if(c){ c.m=parseFloat(v)||0; persist(); }
-  ['qcPauta','inPauta'].forEach(id=>{const e=document.getElementById(id);if(e&&id!==from)e.value=v;});
+  ['qcPauta','inPauta','m3pauta'].forEach(id=>{const e=document.getElementById(id);if(e&&id!==from)e.value=v;});
   const t1=document.getElementById('qcTotal'); if(t1)t1.textContent=fmtQ(fijosTotal());
   const t2=document.getElementById('costTotal'); if(t2)t2.textContent=fmtQ(fijosTotal());
-  refreshAssumpOnly(); calcM1(); calcM2(); renderKPIs();
+  refreshAssumpOnly(); calcM1(); calcM2(); renderKPIs(); calcM3(false);
+}
+function syncComis(v,from){
+  ['m2comis','inComis'].forEach(id=>{const e=document.getElementById(id);if(e&&id!==from)e.value=v;});
+  calcM2(); renderKPIs(); calcM3(false);
 }
 function qcUsd(v){ const u=parseFloat(v); if(isNaN(u))return;
   const e=document.getElementById('inPautaUSD'); if(e)e.value=v;
@@ -626,7 +672,7 @@ function renderKPIs(){
   let h='';
   if(r){
     h+=`<div class="row"><span class="k">Beneficio bruto real</span><span class="v">${fmtQ(inp.bb)}</span></div>`;
-    h+=`<div class="row"><span class="k">(−) Comisiones (${fmtN(cfg.comision,1)}% de redes)</span><span class="v">${fmtQ(-r.comisiones)}</span></div>`;
+    h+=`<div class="row"><span class="k">${inp.comis!=null?'(−) Comisiones reales':'(−) Comisiones estimadas ('+fmtN(cfg.comision,1)+'% de redes)'}</span><span class="v">${fmtQ(-r.comisiones)}</span></div>`;
     h+=`<div class="row"><span class="k">(−) Costos fijos (con pauta real)</span><span class="v">${fmtQ(-r.fijos)}</span></div>`;
     h+=`<div class="row"><span class="k">Disponible antes de reserva</span><span class="v ${r.disponible<0?'neg':''}">${fmtQ(r.disponible)}</span></div>`;
     h+=`<div class="row"><span class="k">(−) Reserva ${fmtN(cfg.reserva,0)}%</span><span class="v">${fmtQ(-r.reserva)}</span></div>`;
@@ -678,13 +724,14 @@ function loadMonth(m){
   const s=archive[m]; if(!s)return; const i=s.inputs||{};
   const set=(id,v)=>document.getElementById(id).value=(v==null?'':v);
   set('inMes',m); set('inSueldo',i.sueldo); set('inVentas',i.ventas); set('inBB',i.bb);
-  set('inRedes',i.redes); set('inPauta',i.pauta); set('inPautaUSD','');
+  set('inRedes',i.redes); set('inComis',i.comis); set('inPauta',i.pauta); set('inPautaUSD','');
   set('inCapital',i.capital||0); set('inClientes',i.clientes); set('inCOGS',i.cogs);
   set('inInv',i.inv); set('inCXC',i.cxc); set('inCredito',i.credito); set('inBancos',i.bancos); set('inNota',s.nota||'');
   // espejo hacia la pestaña Calcular
   if(i.pauta!=null) syncPauta(i.pauta,'ninguno');
   syncVentas(i.ventas==null?'':i.ventas,'inVentas');
   syncBB(i.bb==null?'':i.bb,'inBB');
+  syncComis(i.comis==null?'':i.comis,'inComis');
   go('kpi'); renderKPIs(); toast('📂 '+mesLabel(m)+' cargado en KPIs');
 }
 function delMonth(m){
@@ -692,7 +739,7 @@ function delMonth(m){
   delete archive[m]; persist(); renderArch(); toast('🗑️ Mes eliminado');
 }
 function exportJSON(){
-  const data={app:'GrupoClipFinanzas',version:1,exportado:new Date().toISOString(),config:cfg,archivo:archive};
+  const data={app:'GrupoClipFinanzas',version:2,exportado:new Date().toISOString(),config:cfg,archivo:archive,dividendos:divs};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
   a.download='grupo-clip-respaldo-'+new Date().toISOString().slice(0,10)+'.json';
@@ -706,6 +753,7 @@ function importJSON(ev){
       if(d.app!=='GrupoClipFinanzas'||!d.archivo) throw 0;
       archive={...archive,...d.archivo};
       if(d.config) cfg=d.config;
+      if(d.dividendos&&d.dividendos.movs){ divs=d.dividendos; saveDivs(); }
       persist(); renderArch(); renderCfg(); renderAssump();
       toast('✅ Respaldo importado ('+Object.keys(d.archivo).length+' meses)');
     }catch(e){toast('❌ Archivo no válido');} };
@@ -744,6 +792,7 @@ function saveCfgField(f,v){ cfg[f]=parseFloat(v)||0; persist(); renderQuickCosts
 function resetAll(){
   if(!confirm('Esto borra TODOS los datos locales (archivo y ajustes). ¿Continuar?'))return;
   localStorage.removeItem(LS_CFG); localStorage.removeItem(LS_ARCH); localStorage.removeItem(LS_SEED);
+  localStorage.removeItem('gc_dividends_v1');
   location.reload();
 }
 /* ================= DASHBOARD ================= */
@@ -790,7 +839,7 @@ function rowFor(m){
   const be=i.sueldo!=null? ((i.sueldo*2)/(1-(cs.reserva||20)/100)+fijos)/cm : null;
   let disp=null,res=null,fin=null,socio=null;
   if(i.bb!=null){
-    const comis=(i.redes||0)*(cs.comision||5.6)/100;
+    const comis=i.comis!=null?i.comis:(i.redes||0)*(cs.comision||5.6)/100;
     disp=i.bb-comis-fijos;
     res=disp>0?disp*(cs.reserva||20)/100:0;
     fin=disp-res; socio=fin/2;
@@ -882,6 +931,107 @@ function drawCharts(rows){
       y2:{position:'right',grid:{display:false},ticks:{callback:money}}}}});
 }
 
+/* ================= OPCIÓN B · REPARTO % ================= */
+function repartoCfg(){ if(!cfg.reparto) cfg.reparto={div:10,comp:30,imp:10,oper:45,innov:5}; return cfg.reparto; }
+const REPARTO_DEFS=[['div','💜 Dividendos'],['comp','👥 Compensación (socios)'],['imp','🏛️ Impuestos'],['oper','🏭 Gasto operativo'],['innov','💡 Innovación']];
+function setRepartoPct(k,v){ repartoCfg()[k]=parseFloat(v)||0; persist(); calcM3(false); }
+function renderM3Pcts(){
+  const r=repartoCfg(), el=document.getElementById('m3pcts'); if(!el)return;
+  el.innerHTML=REPARTO_DEFS.map(([k,n])=>
+   `<div class="costrow"><span style="font-size:13px">${n}</span>
+     <input type="number" class="amt" inputmode="decimal" value="${r[k]}" oninput="setRepartoPct('${k}',this.value)">
+     <span class="lock">%</span></div>`).join('');
+}
+function calcM3(rebuildPcts=true){
+  const el=document.getElementById('m3out'); if(!el)return;
+  if(rebuildPcts)renderM3Pcts();
+  const bb=num('m3bb');
+  const pauta=(cfg.costos.find(x=>x.id==='pauta')||{m:0}).m||0;
+  const r=repartoCfg(), tot=(+r.div||0)+(+r.comp||0)+(+r.imp||0)+(+r.oper||0)+(+r.innov||0);
+  if(bb==null){ el.innerHTML='<p class="muted">Ingresa el beneficio bruto del mes (se sincroniza con Modo 2 y KPIs).</p>'; renderDivs(); return; }
+  const gn=bb-pauta;
+  const q=k=>gn*(+r[k]||0)/100;
+  const porSocio=q('comp')/2;
+  let h=`<div class="hero"><div class="hlab">👥 Sueldo por socio · Opción B (${fmtN(r.comp,0)}% ÷ 2)</div>
+    <div class="hval">${fmtQ(porSocio)}</div>
+    <div class="hsub">Ganancia neta ${fmtQ(gn)} = BB ${fmtQ(bb)} − pauta ${fmtQ(pauta)}</div></div>`;
+  h+=`<div class="row"><span class="k"><span class="dot" style="background:var(--purple)"></span>Dividendos (${fmtN(r.div,1)}%)</span><span class="v">${fmtQ(q('div'))}</span></div>`;
+  h+=`<div class="row"><span class="k"><span class="dot" style="background:var(--blue)"></span>Compensación (${fmtN(r.comp,1)}%)</span><span class="v">${fmtQ(q('comp'))}</span></div>`;
+  h+=`<div class="row"><span class="k" style="padding-left:16px">→ Laura (50%)</span><span class="v">${fmtQ(porSocio)}</span></div>`;
+  h+=`<div class="row"><span class="k" style="padding-left:16px">→ Wilmar (50%)</span><span class="v">${fmtQ(porSocio)}</span></div>`;
+  h+=`<div class="row"><span class="k"><span class="dot" style="background:var(--teal)"></span>Impuestos (${fmtN(r.imp,1)}%)</span><span class="v">${fmtQ(q('imp'))}</span></div>`;
+  h+=`<div class="row"><span class="k"><span class="dot" style="background:var(--pink)"></span>Gasto operativo (${fmtN(r.oper,1)}%)</span><span class="v">${fmtQ(q('oper'))}</span></div>`;
+  h+=`<div class="row"><span class="k"><span class="dot" style="background:var(--orange)"></span>Innovación (${fmtN(r.innov,1)}%)</span><span class="v">${fmtQ(q('innov'))}</span></div>`;
+  if(Math.abs(tot-100)>0.01) h+=`<p class="muted" style="color:var(--red);margin-top:6px">⚠️ Los porcentajes suman ${fmtN(tot,1)}% — deben sumar 100%.</p>`;
+  // ¿Alcanzan las bolsas para los costos reales?
+  const fijosSP=fijosSinPauta(cfg);
+  const comisReal=num('m2comis');
+  const cuotas=cfg.costos.filter(x=>x.id==='prestamo194'||x.id==='ah2024'||x.id==='compras').reduce((s,x)=>s+(+x.m||0),0);
+  const necesidades=fijosSP+(comisReal||0);
+  const dif=q('oper')-necesidades;
+  h+=`<h3>¿Alcanza la bolsa operativa?</h3>`;
+  h+=`<div class="row"><span class="k">Bolsa gasto operativo (${fmtN(r.oper,0)}%)</span><span class="v">${fmtQ(q('oper'))}</span></div>`;
+  h+=`<div class="row"><span class="k">Costos fijos reales sin pauta${comisReal!=null?' + comisiones reales':''} (incluye préstamos ${fmtQ(cuotas)})</span><span class="v">${fmtQ(necesidades)}</span></div>`;
+  h+=`<div class="row"><span class="k">${dif<0?'❌ Faltante — sale de otras bolsas o de caja':'✅ Sobrante'}</span><span class="v ${dif<0?'neg':'pos'}">${fmtQ(dif)}</span></div>`;
+  // comparación con método A (residual)
+  const ventas=num('m2ventas');
+  const comisA=comisReal!=null?comisReal:(ventas!=null?ventas*cfg.comision/100:(cfg.margen>0?bb/(cfg.margen/100)*cfg.comision/100:0));
+  const dispA=bb-comisA-(fijosSP+pauta);
+  const resA=dispA>0?dispA*cfg.reserva/100:0;
+  const socioA=(dispA-resA)/2;
+  h+=`<h3>Comparación de métodos</h3>`;
+  h+=`<div class="row"><span class="k">Método A · residual (cubre todos los costos + reserva ${fmtN(cfg.reserva,0)}%)</span><span class="v ${socioA<0?'neg':''}">${fmtQ(socioA)} c/u</span></div>`;
+  h+=`<div class="row"><span class="k">Método B · reparto ${fmtN(r.comp,0)}% (este)</span><span class="v">${fmtQ(porSocio)} c/u</span></div>`;
+  h+=`<p class="muted" style="margin-top:6px">Si B paga más que A, la diferencia queda descubierta en préstamos, reserva o bolsas sin fondear. Si A paga más, tus % son conservadores este mes.</p>`;
+  el.innerHTML=h;
+  const btn=document.getElementById('divMesBtn');
+  if(btn){ btn.textContent='📥 Acumular dividendo de este cálculo: '+fmtQ(q('div')); btn.dataset.monto=q('div').toFixed(2); }
+  renderDivs();
+}
+
+/* ================= BANCO DE DIVIDENDOS ================= */
+let divs = load('gc_dividends_v1') || {movs:[]};
+function saveDivs(){ save('gc_dividends_v1',divs); }
+function divBalance(){ return divs.movs.reduce((s,m)=>s+(m.tipo==='acumulado'?m.monto:-m.monto),0); }
+function divAdd(tipo){
+  const monto=num('divMonto');
+  if(monto==null||monto<=0){toast('⚠️ Ingresa un monto válido');return;}
+  const nota=document.getElementById('divNota').value||'';
+  divs.movs.push({ts:new Date().toISOString(),tipo,monto,nota});
+  saveDivs(); document.getElementById('divMonto').value=''; document.getElementById('divNota').value='';
+  renderDivs(); toast(tipo==='acumulado'?'📥 Dividendo acumulado':'💸 Pago registrado');
+}
+function divAccrueMonth(){
+  const btn=document.getElementById('divMesBtn'); const m=parseFloat(btn.dataset.monto||'');
+  if(isNaN(m)||m<=0){toast('⚠️ Primero ingresa el BB del mes');return;}
+  const mes=document.getElementById('inMes').value;
+  divs.movs.push({ts:new Date().toISOString(),tipo:'acumulado',monto:m,nota:'Dividendo '+(mes?mesLabel(mes):'del mes')});
+  saveDivs(); renderDivs(); toast('📥 '+fmtQ(m)+' acumulado');
+}
+function divDel(i){
+  if(!confirm('¿Eliminar este movimiento del historial de dividendos?'))return;
+  divs.movs.splice(i,1); saveDivs(); renderDivs(); toast('🗑️ Movimiento eliminado');
+}
+function renderDivs(){
+  const s=document.getElementById('divSaldo'); if(!s)return;
+  const bal=divBalance();
+  s.textContent=fmtQ(bal); s.className='v big '+(bal>0.005?'pos':(bal<-0.005?'neg':''));
+  let run=0;
+  const rows=divs.movs.map((m,i)=>{
+    run+=(m.tipo==='acumulado'?m.monto:-m.monto);
+    const f=new Date(m.ts).toLocaleDateString('es-GT',{day:'2-digit',month:'short',year:'2-digit'});
+    return `<tr><td>${f}</td>
+      <td>${m.tipo==='acumulado'?'➕ Acumulado':'➖ Pago'}</td>
+      <td class="${m.tipo==='acumulado'?'pos':'neg'}">${fmtQ(m.tipo==='acumulado'?m.monto:-m.monto)}</td>
+      <td><b>${fmtQ(run)}</b></td>
+      <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis">${m.nota||''}</td>
+      <td><button class="btn danger sm" onclick="divDel(${i})">✕</button></td></tr>`;
+  });
+  let h='<tr><th>Fecha</th><th>Tipo</th><th>Monto</th><th>Saldo</th><th>Nota</th><th></th></tr>';
+  h+=rows.length?rows.reverse().join(''):'<tr><td colspan="6" class="muted">Sin movimientos todavía.</td></tr>';
+  document.getElementById('divTable').innerHTML=h;
+}
+
 /* ================= DATOS HISTÓRICOS ================= */
 const HIST=[
  ['2025-04',31862.42, 5045.67, 60094.49,3.21],
@@ -903,7 +1053,7 @@ function seedHistory(){
   HIST.forEach(([m,bb,pauta,ventas,roas])=>{
     if(archive[m])return;
     const redes=+(pauta*roas).toFixed(2);
-    const inp={mes:m,sueldo:10000,ventas,bb,redes,pauta,capital:0,clientes:null,
+    const inp={mes:m,sueldo:10000,ventas,bb,redes,comis:null,pauta,capital:0,clientes:null,
       cogs:null,inv:null,cxc:null,credito:null,bancos:null,nota:''};
     archive[m]={mes:m,inputs:inp,kpis:computeKPIs(inp,cfg),
       cfgSnap:{margen:cfg.margen,comision:cfg.comision,reserva:cfg.reserva,meta:cfg.meta,
