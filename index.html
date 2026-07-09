@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Clip Finanzas">
+<meta name="theme-color" content="#0e1420">
+<title>Grupo Clip · Finanzas</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#f2f4f8; --card:#ffffff; --card2:#f7f8fc; --text:#1d1d1f; --text2:#6e6e73;
+  --border:#e6e8ef; --input:#f0f1f6; --tabbar:rgba(255,255,255,.88);
+  --blue:#007aff; --indigo:#5856d6; --purple:#af52de; --pink:#ff2d55;
+  --orange:#ff9500; --mint:#00c7be; --teal:#30b0c7;
+  --accent:var(--blue);
+  --green:#248a3d; --greenbg:#e4f7e9; --greenraw:#34c759;
+  --yellow:#b26a00; --yellowbg:#fff3d6; --yellowraw:#ffcc00;
+  --red:#d70015; --redbg:#fde8e7; --redraw:#ff3b30;
+  --heroA:#007aff; --heroB:#5856d6;
+  --shadow:0 2px 10px rgba(60,70,120,.07);
+}
+[data-theme="dark"]{
+  --bg:#0d1117; --card:#191f2a; --card2:#141a23; --text:#f2f3f7; --text2:#9aa2b1;
+  --border:#28303e; --input:#222a38; --tabbar:rgba(16,21,30,.9);
+  --blue:#0a84ff; --indigo:#5e5ce6; --purple:#bf5af2; --pink:#ff375f;
+  --orange:#ff9f0a; --mint:#63e6e2; --teal:#40c8e0;
+  --accent:var(--blue);
+  --green:#30d158; --greenbg:#11301c; --greenraw:#30d158;
+  --yellow:#ffd60a; --yellowbg:#33290a; --yellowraw:#ffd60a;
+  --red:#ff6961; --redbg:#3a1513; --redraw:#ff453a;
+  --heroA:#0a84ff; --heroB:#5e5ce6;
+  --shadow:0 2px 10px rgba(0,0,0,.35);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]):not([data-theme="dark"]){
+    --bg:#0d1117; --card:#191f2a; --card2:#141a23; --text:#f2f3f7; --text2:#9aa2b1;
+    --border:#28303e; --input:#222a38; --tabbar:rgba(16,21,30,.9);
+    --blue:#0a84ff; --indigo:#5e5ce6; --purple:#bf5af2; --pink:#ff375f;
+    --orange:#ff9f0a; --mint:#63e6e2; --teal:#40c8e0;
+    --accent:var(--blue);
+    --green:#30d158; --greenbg:#11301c; --greenraw:#30d158;
+    --yellow:#ffd60a; --yellowbg:#33290a; --yellowraw:#ffd60a;
+    --red:#ff6961; --redbg:#3a1513; --redraw:#ff453a;
+    --heroA:#0a84ff; --heroB:#5e5ce6;
+    --shadow:0 2px 10px rgba(0,0,0,.35);
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif;
+  background:var(--bg);color:var(--text);font-size:15px;line-height:1.45;
+  padding-bottom:calc(34px + env(safe-area-inset-bottom));}
+header.app{padding:calc(14px + env(safe-area-inset-top)) 18px 8px;display:flex;align-items:baseline;justify-content:space-between}
+header.app h1{font-size:22px;font-weight:800;letter-spacing:-.3px}
+header.app span{font-size:12px;color:var(--text2)}
+.wrap{max-width:860px;margin:0 auto;padding:0 14px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.card h2{font-size:16px;font-weight:700;margin-bottom:10px}
+.card h3{font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin:14px 0 8px}
+.muted{color:var(--text2);font-size:12.5px}
+.seg{display:flex;background:var(--input);border-radius:12px;padding:3px;margin-bottom:14px}
+.seg button{flex:1;border:0;background:transparent;color:var(--text2);font-weight:600;font-size:13px;
+  padding:9px 6px;border-radius:10px;cursor:pointer;font-family:inherit}
+.seg button.on{background:var(--card);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.field{margin-bottom:10px}
+.field label{display:block;font-size:12.5px;font-weight:600;color:var(--text2);margin-bottom:4px}
+.field input,.field select,.field textarea{width:100%;border:1px solid var(--border);background:var(--input);
+  color:var(--text);border-radius:10px;padding:10px 12px;font-size:16px;font-family:inherit;outline:none}
+.field input:focus{border-color:var(--accent)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:520px){.grid3{grid-template-columns:1fr 1fr}}
+.row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);gap:10px}
+.row:last-child{border-bottom:0}
+.row .k{font-size:13.5px;color:var(--text2)}
+.row .v{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.big{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums}
+.pos{color:var(--green)} .neg{color:var(--red)}
+.btn{display:inline-block;width:100%;border:0;border-radius:12px;padding:13px;font-size:15px;font-weight:700;
+  font-family:inherit;cursor:pointer;background:var(--accent);color:#fff;text-align:center}
+.btn.sec{background:var(--input);color:var(--text)}
+.btn.danger{background:var(--redbg);color:var(--red)}
+.btn.sm{width:auto;padding:7px 12px;font-size:12.5px;border-radius:9px}
+.kpigrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(min-width:700px){.kpigrid{grid-template-columns:repeat(3,1fr)}}
+.kpi{border-radius:14px;padding:12px;border:1px solid var(--border);background:var(--card2)}
+.kpi .name{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--text2);margin-bottom:4px}
+.kpi .val{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
+.kpi .sub{font-size:11px;color:var(--text2);margin-top:3px}
+.kpi.g{background:var(--greenbg)} .kpi.g .val{color:var(--green)}
+.kpi.y{background:var(--yellowbg)} .kpi.y .val{color:var(--yellow)}
+.kpi.r{background:var(--redbg)} .kpi.r .val{color:var(--red)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;-webkit-overflow-scrolling:touch}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;border:1px solid var(--border);background:var(--card);color:var(--text2);
+  border-radius:20px;padding:7px 14px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.delta{font-size:11px;font-weight:700;border-radius:8px;padding:2px 6px;margin-left:6px}
+.delta.up{background:var(--greenbg);color:var(--green)} .delta.dn{background:var(--redbg);color:var(--red)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;color:var(--text2);font-size:11px;text-transform:uppercase;letter-spacing:.3px;padding:6px 8px;border-bottom:1px solid var(--border)}
+td{padding:9px 8px;border-bottom:1px solid var(--border);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tabbar{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--tabbar);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-top:1px solid var(--border);
+  padding:6px 4px calc(6px + env(safe-area-inset-bottom));z-index:50}
+.tabbar button{flex:1;border:0;background:transparent;color:var(--text2);font-family:inherit;
+  font-size:10px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0}
+.tabbar button .ico{font-size:21px;line-height:1}
+.tabbar button.on{color:var(--accent)}
+.page{display:none}.page.on{display:block}
+.canvasbox{position:relative;height:260px;margin-top:6px}
+.costrow{display:grid;grid-template-columns:1fr 120px;gap:8px;align-items:center;margin-bottom:8px}
+.costrow input{border:1px solid var(--border);background:var(--input);color:var(--text);border-radius:9px;padding:8px 10px;font-size:14px;font-family:inherit;text-align:right}
+.costrow .nm{font-size:13px}
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;background:var(--input);color:var(--text2);margin-left:6px}
+.note{background:var(--card2);border:1px dashed var(--border);border-radius:12px;padding:10px 12px;font-size:12.5px;color:var(--text2);margin-bottom:14px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(95px + env(safe-area-inset-bottom));
+  background:var(--text);color:var(--bg);padding:10px 18px;border-radius:22px;font-size:13.5px;font-weight:600;
+  opacity:0;transition:opacity .25s;pointer-events:none;z-index:99}
+.toast.show{opacity:1}
+.semaline{display:flex;gap:6px;font-size:10.5px;color:var(--text2);margin-top:3px;flex-wrap:wrap}
+/* ===== Apple color layer ===== */
+.card{box-shadow:var(--shadow)}
+header.app h1{background:linear-gradient(90deg,var(--blue),var(--indigo),var(--purple));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.themebtn{border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:20px;
+  padding:6px 12px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;box-shadow:var(--shadow)}
+.hero{border-radius:18px;padding:18px;margin:12px 0 4px;color:#fff;
+  background:linear-gradient(135deg,var(--heroA),var(--heroB));box-shadow:0 8px 22px rgba(70,80,220,.28)}
+.hero.good{background:linear-gradient(135deg,#34c759,#00c7be);box-shadow:0 8px 22px rgba(30,180,120,.3)}
+.hero.bad{background:linear-gradient(135deg,#ff9500,#ff2d55);box-shadow:0 8px 22px rgba(255,80,80,.3)}
+.hero .hlab{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.85}
+.hero .hval{font-size:32px;font-weight:800;letter-spacing:-.5px;font-variant-numeric:tabular-nums;margin:2px 0}
+.hero .hsub{font-size:12.5px;opacity:.9}
+.btn{background:linear-gradient(135deg,var(--blue),var(--indigo))}
+.btn.sec{background:var(--input);color:var(--text)}
+.btn.danger{background:var(--redbg);color:var(--red)}
+.kpi{position:relative;overflow:hidden;background:var(--card)}
+.kpi .ic{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+  font-size:15px;margin-bottom:7px;background:color-mix(in srgb,var(--kc,var(--blue)) 16%,transparent)}
+.kpi::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--kc,var(--border))}
+.kpi.g{--kc:var(--greenraw);background:var(--greenbg)}
+.kpi.y{--kc:var(--yellowraw);background:var(--yellowbg)}
+.kpi.r{--kc:var(--redraw);background:var(--redbg)}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:1px}
+.tabbar button.on .ico{transform:scale(1.12)}
+.tabbar button .ico{transition:transform .15s}
+.chip.on{background:linear-gradient(135deg,var(--blue),var(--indigo));border-color:transparent}
+.seg button.on{color:var(--accent)}
+.pillseg{display:flex;background:var(--input);border-radius:11px;padding:3px;gap:2px}
+.pillseg button{flex:1;border:0;background:transparent;color:var(--text2);font-weight:600;font-size:12.5px;
+  padding:8px 4px;border-radius:9px;cursor:pointer;font-family:inherit}
+.pillseg button.on{background:var(--card);color:var(--accent);box-shadow:0 1px 4px rgba(0,0,0,.14)}
+/* ===== navegación superior estilo iOS ===== */
+.topnav{position:sticky;top:0;z-index:60;padding:8px 0 10px;margin-bottom:4px;
+  background:color-mix(in srgb,var(--bg) 78%,transparent);
+  backdrop-filter:blur(18px) saturate(1.6);-webkit-backdrop-filter:blur(18px) saturate(1.6)}
+.pillnav{display:flex;background:var(--input);border-radius:15px;padding:4px;gap:2px;box-shadow:var(--shadow)}
+.pillnav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;border:0;
+  background:transparent;color:var(--text2);font-family:inherit;font-size:10.5px;font-weight:600;
+  padding:7px 2px;border-radius:12px;cursor:pointer;transition:all .18s}
+.pillnav button .ico{font-size:18px;line-height:1.15;filter:grayscale(1) opacity(.65);transition:all .18s}
+.pillnav button.on{background:var(--card);color:var(--accent);box-shadow:0 2px 9px rgba(0,0,0,.14)}
+.pillnav button.on .ico{filter:none;transform:scale(1.08)}
+</style>
+</head>
+<body>
+<header class="app"><h1>Grupo Clip · Finanzas</h1>
+  <button class="themebtn" id="themeBtn" onclick="cycleTheme()">☀️ Claro</button></header>
+<div class="wrap">
+
+<nav class="topnav"><div class="pillnav">
+  <button class="on" id="tab-calc" onclick="go('calc')"><span class="ico">🧮</span><span>Calcular</span></button>
+  <button id="tab-kpi" onclick="go('kpi')"><span class="ico">📊</span><span>KPIs</span></button>
+  <button id="tab-dash" onclick="go('dash')"><span class="ico">📈</span><span>Panel</span></button>
+  <button id="tab-arch" onclick="go('arch')"><span class="ico">🗂️</span><span>Meses</span></button>
+  <button id="tab-cfg" onclick="go('cfg')"><span class="ico">⚙️</span><span>Ajustes</span></button>
+</div></nav>
+
+<!-- ============ CALCULADORA ============ -->
+<div class="page on" id="page-calc">
+  <div class="card">
+    <h2>Costos del mes <span class="badge">edítalos aquí cada mes</span></h2>
+    <div class="grid2">
+      <div class="field"><label>📣 Pauta del mes (Q)</label><input type="number" inputmode="decimal" id="qcPauta" oninput="setCostQuick('pauta',this.value)"></div>
+      <div class="field"><label>📦 Fulfillment GUAVEN (Q)</label><input type="number" inputmode="decimal" id="qcFulfill" oninput="setCostQuick('fulfill',this.value)"></div>
+    </div>
+    <div class="row"><span class="k" style="font-weight:700">Total costos fijos del mes</span><span class="v" id="qcTotal"></span></div>
+  </div>
+  <div class="seg">
+    <button id="segM1" class="on" onclick="setMode(1)">¿Cuánto necesito vender?</button>
+    <button id="segM2" onclick="setMode(2)">Tengo mis ventas, ¿cuánto gano?</button>
+  </div>
+
+  <div id="mode1">
+    <div class="card">
+      <h2>Modo 1 · Meta de ventas</h2>
+      <div class="grid2">
+        <div class="field"><label>Sueldo deseado por socio (Q)</label><input type="number" inputmode="decimal" id="m1sueldo" value="10000" oninput="calcM1()"></div>
+        <div class="field"><label>Ventas reales del mes (Q, opcional)</label><input type="number" inputmode="decimal" id="m1ventas" placeholder="Para comparar" oninput="calcM1()"></div>
+      </div>
+      <div id="m1out"></div>
+    </div>
+  </div>
+
+  <div id="mode2" style="display:none">
+    <div class="card">
+      <h2>Modo 2 · ¿Cuánto ganamos?</h2>
+      <p class="muted" style="margin-bottom:10px">Ingresa tus <b>ventas del mes</b>, tu <b>beneficio bruto real</b> de Zoho (base efectivo), o ambos. Con BB real el cálculo es exacto; solo con ventas se estima con el margen estándar.</p>
+      <div class="grid2">
+        <div class="field"><label>Ventas del mes (Q)</label><input type="number" inputmode="decimal" id="m2ventas" placeholder="Ej. 60000" oninput="calcM2()"></div>
+        <div class="field"><label>Beneficio bruto real (Q) · Zoho efectivo</label><input type="number" inputmode="decimal" id="m2bb" placeholder="Opcional, más exacto" oninput="calcM2()"></div>
+      </div>
+      <div id="m2out"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Supuestos del modelo</h2>
+    <div id="calcAssump"></div>
+    <p class="muted" style="margin-top:8px">Edita costos fijos, margen, comisión y reserva en ⚙️ Ajustes. La pauta y el fulfillment son los costos que cambian cada mes.</p>
+  </div>
+</div>
+
+<!-- ============ KPIs ============ -->
+<div class="page" id="page-kpi">
+  <div class="card">
+    <h2>Datos del mes</h2>
+    <div class="note">📥 <b>Fuentes:</b> BB Real = Zoho Books P&amp;L <b>base efectivo</b> · Ventas totales = P&amp;L <b>base acumulación</b> · Ventas de redes = "Ventas por vendedor" (Marleny + Fernanda + Laura) · Pauta = Facebook Ads (USD × TC). <b>No</b> usar órdenes de Zoho Inventory.</div>
+    <div class="grid2">
+      <div class="field"><label>Mes</label><input type="month" id="inMes"></div>
+      <div class="field"><label>Sueldo deseado por socio (Q)</label><input type="number" inputmode="decimal" id="inSueldo" value="10000" oninput="renderKPIs()"></div>
+      <div class="field"><label>Ventas totales (Q) · acumulación</label><input type="number" inputmode="decimal" id="inVentas" oninput="renderKPIs()"></div>
+      <div class="field"><label>Beneficio bruto real (Q) · efectivo</label><input type="number" inputmode="decimal" id="inBB" oninput="renderKPIs()"></div>
+      <div class="field"><label>Ventas de redes (Q)</label><input type="number" inputmode="decimal" id="inRedes" oninput="renderKPIs()"></div>
+      <div class="field"><label>Pauta del mes (Q)</label><input type="number" inputmode="decimal" id="inPauta" oninput="renderKPIs()"></div>
+      <div class="field"><label>Pauta en USD (opcional)</label><input type="number" inputmode="decimal" id="inPautaUSD" oninput="usd2q()" placeholder="Convierte con TC"></div>
+      <div class="field"><label>Capital adicional invertido (Q)</label><input type="number" inputmode="decimal" id="inCapital" value="0" oninput="renderKPIs()"></div>
+      <div class="field"><label>Clientes nuevos</label><input type="number" inputmode="numeric" id="inClientes" oninput="renderKPIs()"></div>
+      <div class="field"><label>COGS del mes (Q)</label><input type="number" inputmode="decimal" id="inCOGS" oninput="renderKPIs()"></div>
+      <div class="field"><label>Costo inventario total (Q)</label><input type="number" inputmode="decimal" id="inInv" oninput="renderKPIs()"></div>
+      <div class="field"><label>CXC — cuentas por cobrar (Q)</label><input type="number" inputmode="decimal" id="inCXC" oninput="renderKPIs()"></div>
+      <div class="field"><label>Ventas a crédito (Q, opcional — para DSO)</label><input type="number" inputmode="decimal" id="inCredito" oninput="renderKPIs()" placeholder="Si vacío, usa ventas totales"></div>
+      <div class="field"><label>Efectivo en bancos GT+SV (Q)</label><input type="number" inputmode="decimal" id="inBancos" oninput="renderKPIs()"></div>
+    </div>
+    <div class="field"><label>Nota del mes (opcional)</label><textarea id="inNota" rows="2" placeholder='Ej. "Mes de Black Friday", "Lanzamos NANA BANANA"'></textarea></div>
+  </div>
+
+  <div class="card">
+    <h2>Resultado del mes</h2>
+    <div id="kpiResumen"></div>
+  </div>
+
+  <div class="card">
+    <h2>KPIs</h2>
+    <div class="kpigrid" id="kpiCards"></div>
+  </div>
+
+  <button class="btn" onclick="saveMonth()">💾 Guardar mes en archivo</button>
+  <p class="muted" style="text-align:center;margin-top:8px">Si el mes ya existe, se sobrescribe con estos valores.</p>
+</div>
+
+<!-- ============ DASHBOARD ============ -->
+<div class="page" id="page-dash">
+  <div class="chips" id="filterChips"></div>
+  <div class="card" id="customRange" style="display:none">
+    <div class="grid2">
+      <div class="field"><label>Desde</label><input type="month" id="rangeFrom" onchange="renderDash()"></div>
+      <div class="field"><label>Hasta</label><input type="month" id="rangeTo" onchange="renderDash()"></div>
+    </div>
+  </div>
+  <div class="card" style="padding:12px 16px">
+    <label style="display:flex;align-items:center;gap:10px;font-size:13.5px;font-weight:600;cursor:pointer">
+      <input type="checkbox" id="cmpToggle" onchange="renderDash()" style="width:18px;height:18px;accent-color:var(--accent)">
+      Comparar vs período anterior equivalente
+    </label>
+  </div>
+  <div class="kpigrid" id="dashCards" style="margin-bottom:14px"></div>
+  <div class="card"><h2>Ventas de redes vs Breakeven</h2><div class="canvasbox"><canvas id="ch1"></canvas></div></div>
+  <div class="card"><h2>ROAS vs mínimo rentable</h2><div class="canvasbox"><canvas id="ch2"></canvas></div></div>
+  <div class="card"><h2>Ganancia por socio</h2><div class="canvasbox"><canvas id="ch3"></canvas></div></div>
+  <div class="card"><h2>Reserva mensual y acumulada</h2><div class="canvasbox"><canvas id="ch4"></canvas></div></div>
+</div>
+
+<!-- ============ ARCHIVO ============ -->
+<div class="page" id="page-arch">
+  <div class="card">
+    <h2>Archivo mensual</h2>
+    <p class="muted" style="margin-bottom:10px">Toca un mes para cargarlo de vuelta en KPIs. Los datos viven solo en este dispositivo: usa Exportar/Importar para pasarlos entre tu Mac, iPhone y iPad.</p>
+    <div class="tablewrap"><table id="archTable"></table></div>
+  </div>
+  <div class="grid2">
+    <button class="btn sec" onclick="exportJSON()">⬇️ Exportar respaldo JSON</button>
+    <button class="btn sec" onclick="document.getElementById('importFile').click()">⬆️ Importar respaldo</button>
+  </div>
+  <input type="file" id="importFile" accept=".json,application/json" style="display:none" onchange="importJSON(event)">
+</div>
+
+<!-- ============ AJUSTES ============ -->
+<div class="page" id="page-cfg">
+  <div class="card">
+    <h2>Parámetros del modelo</h2>
+    <div class="grid2">
+      <div class="field"><label>Margen bruto estándar (%)</label><input type="number" inputmode="decimal" id="cfgMargen" oninput="saveCfgField('margen',this.value)"></div>
+      <div class="field"><label>Comisión efectiva (%)</label><input type="number" inputmode="decimal" id="cfgCom" oninput="saveCfgField('comision',this.value)"></div>
+      <div class="field"><label>Reserva (%)</label><input type="number" inputmode="decimal" id="cfgRes" oninput="saveCfgField('reserva',this.value)"></div>
+      <div class="field"><label>Meta mensual de ventas (Q)</label><input type="number" inputmode="decimal" id="cfgMeta" oninput="saveCfgField('meta',this.value)"></div>
+      <div class="field"><label>Tipo de cambio (Q por USD)</label><input type="number" inputmode="decimal" step="0.01" id="cfgTC" oninput="saveCfgField('tc',this.value)"></div>
+      <div class="field"><label>Interés estimado en cuotas (%) — EBITDA</label><input type="number" inputmode="decimal" id="cfgInt" oninput="saveCfgField('interes',this.value)"></div>
+      <div class="field"><label>Ticket promedio (Q por factura)</label><input type="number" inputmode="decimal" id="cfgTicket" oninput="saveCfgField('ticket',this.value)"></div>
+    </div>
+    <h3>Apariencia</h3>
+    <div class="pillseg">
+      <button id="th-light" onclick="setTheme('light')">☀️ Claro</button>
+      <button id="th-dark" onclick="setTheme('dark')">🌙 Oscuro</button>
+      <button id="th-auto" onclick="setTheme('auto')">⚙️ Auto (sistema)</button>
+    </div>
+    <p class="muted">Reserva 20% = 10% impuestos + 5% innovación + 5% emergencia. Nunca se reparte.</p>
+  </div>
+  <div class="card">
+    <h2>Costos fijos mensuales <span class="badge">sin sueldos de socios</span></h2>
+    <div id="costList"></div>
+    <div class="row" style="border-top:2px solid var(--border);margin-top:6px">
+      <span class="k" style="font-weight:700">Total costos fijos</span><span class="v" id="costTotal"></span>
+    </div>
+    <p class="muted" style="margin-top:8px">✏️ <b>Pauta</b> y <b>Fulfillment</b> se editan cada mes. Los sueldos de socios NO van aquí: son el resultado del negocio.</p>
+  </div>
+  <div class="card">
+    <h2>Uso en tus dispositivos Apple</h2>
+    <p class="muted">📱 <b>iPhone/iPad:</b> abre este archivo en Safari (guárdalo en iCloud Drive/Archivos) → botón Compartir → <b>Agregar a pantalla de inicio</b>. Se verá como app.<br><br>💻 <b>Mac:</b> guárdalo en iCloud Drive y ábrelo con Safari.<br><br>🔄 Los datos se guardan localmente en cada dispositivo. Para sincronizar: Archivo → Exportar JSON → ábrelo en el otro dispositivo → Importar.</p>
+  </div>
+  <button class="btn danger" onclick="resetAll()">Restablecer todo (borra datos locales)</button>
+</div>
+
+</div><!-- /wrap -->
+
+<div class="toast" id="toast" style="bottom:30px"></div>
+
+<script>
+/* ================= NÚCLEO ================= */
+const LS_CFG='gc_config_v1', LS_ARCH='gc_archive_v1', LS_SEED='gc_seeded_v1';
+
+const DEFAULT_COSTS=[
+ {id:'pauta',    n:'Pauta (publicidad redes) ✏️', m:6885.00},
+ {id:'celulares',n:'Celulares', m:398.00},
+ {id:'prestamo194',n:'Préstamo $19.4K (60 cuotas)', m:3331.31},
+ {id:'macbooks', n:'MacBooks (48 cuotas)', m:456.23},
+ {id:'zoho',     n:'Zoho One (3 usuarios)', m:1078.00},
+ {id:'contador', n:'Contador', m:1500.00},
+ {id:'manten',   n:'Mantenimiento Valles de Napa', m:1000.00},
+ {id:'ah2024',   n:'Préstamo AH2024 Q60K (24 cuotas)', m:3139.06},
+ {id:'compras',  n:'Compras varias en cuotas', m:1226.59},
+ {id:'almacen',  n:'Almacenamiento', m:2000.00},
+ {id:'smm',      n:'Social Media management', m:1000.00},
+ {id:'fulfill',  n:'Fulfillment variable (GUAVEN) ✏️', m:6257.00}
+];
+const DEFAULT_CFG={margen:60, comision:5.6, reserva:20, meta:50000, tc:7.65, interes:25, ticket:421,
+  costos:DEFAULT_COSTS.map(c=>({...c}))};
+
+/* ---------- tema ---------- */
+let theme = localStorage.getItem('gc_theme') || 'light';
+function applyTheme(){
+  if(theme==='auto') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme',theme);
+  const dark = theme==='dark' || (theme==='auto' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  const mc=document.querySelector('meta[name="theme-color"]'); if(mc) mc.content = dark?'#0d1117':'#f2f4f8';
+  const lbl={light:'☀️ Claro',dark:'🌙 Oscuro',auto:'⚙️ Auto'}[theme];
+  const b=document.getElementById('themeBtn'); if(b) b.textContent=lbl;
+  ['light','dark','auto'].forEach(t=>{const e=document.getElementById('th-'+t);if(e)e.classList.toggle('on',t===theme);});
+  if(document.getElementById('page-dash').classList.contains('on')) renderDash();
+}
+function setTheme(t){ theme=t; localStorage.setItem('gc_theme',t); applyTheme(); }
+function cycleTheme(){ setTheme(theme==='light'?'dark':(theme==='dark'?'auto':'light')); }
+
+let cfg = load(LS_CFG) || JSON.parse(JSON.stringify(DEFAULT_CFG));
+let archive = load(LS_ARCH) || {};   // { 'YYYY-MM': snapshot }
+
+function load(k){ try{const v=localStorage.getItem(k);return v?JSON.parse(v):null}catch(e){return null} }
+function save(k,v){ try{localStorage.setItem(k,JSON.stringify(v))}catch(e){} }
+function persist(){ save(LS_CFG,cfg); save(LS_ARCH,archive); }
+
+/* ---------- formato ---------- */
+function fmtQ(n){ if(n==null||isNaN(n))return '—';
+  const s=Math.abs(n).toLocaleString('es-GT',{minimumFractionDigits:2,maximumFractionDigits:2});
+  return (n<0?'-':'')+'Q'+s; }
+function fmtN(n,d=2){ return (n==null||isNaN(n))?'—':n.toLocaleString('es-GT',{minimumFractionDigits:d,maximumFractionDigits:d}); }
+function fmtPct(n){ return (n==null||isNaN(n))?'—':fmtN(n,1)+'%'; }
+const num=id=>{const v=parseFloat(document.getElementById(id).value);return isNaN(v)?null:v};
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2200);}
+
+/* ---------- modelo ---------- */
+function contribMargin(c=cfg){ return (c.margen - c.comision)/100; }
+function fijosSinPauta(c=cfg){ return c.costos.filter(x=>x.id!=='pauta').reduce((s,x)=>s+(+x.m||0),0); }
+function fijosTotal(c=cfg){ return c.costos.reduce((s,x)=>s+(+x.m||0),0); }
+function breakeven(sueldo, fijos, c=cfg){
+  const resultadoDeseado = sueldo*2;
+  const disponibleNecesario = resultadoDeseado/(1 - c.reserva/100);
+  const margenNecesario = disponibleNecesario + fijos;
+  return {be: margenNecesario/contribMargin(c), resultadoDeseado, disponibleNecesario, margenNecesario};
+}
+/* resultado a partir de ventas estimadas (calculadora, usa margen estándar) */
+function resultadoDeVentas(ventas, fijos, c=cfg){
+  const mc = ventas*contribMargin(c);
+  const disponible = mc - fijos;
+  const reserva = disponible>0 ? disponible*c.reserva/100 : 0;
+  const resultado = disponible - reserva;
+  return {mc, disponible, reserva, resultado, porSocio: resultado/2};
+}
+/* resultado a partir de datos reales (KPIs / archivo) */
+function resultadoReal(inp, c){
+  if(inp.bb==null) return null;
+  const fijos = fijosSinPauta(c) + (inp.pauta||0);
+  const comisiones = (inp.redes||0)*c.comision/100;
+  const disponible = inp.bb - comisiones - fijos;
+  const reserva = disponible>0 ? disponible*c.reserva/100 : 0;
+  const resultado = disponible - reserva;
+  return {fijos, comisiones, disponible, reserva, resultado, porSocio: resultado/2};
+}
+function computeKPIs(inp, c){
+  const r = resultadoReal(inp,c);
+  const k = {};
+  const cuotas = c.costos.filter(x=>x.id==='prestamo194'||x.id==='ah2024').reduce((s,x)=>s+(+x.m||0),0);
+  if(r){
+    k.disponible=r.disponible; k.reserva=r.reserva; k.resultado=r.resultado; k.porSocio=r.porSocio;
+    k.rentOper = inp.ventas>0 ? r.disponible/inp.ventas*100 : null;
+    k.rentEmp  = inp.ventas>0 ? r.resultado/inp.ventas*100 : null;
+    k.ebitda   = r.disponible + cuotas*c.interes/100;
+    const invMes = (inp.pauta||0)+(inp.capital||0);
+    k.roi = invMes>0 ? r.resultado/invMes*100 : null;
+  }
+  k.cac  = (inp.pauta>0 && inp.clientes>0) ? inp.pauta/inp.clientes : null;
+  k.roas = (inp.pauta>0 && inp.redes!=null) ? inp.redes/inp.pauta : null;
+  k.roasMin = 1/contribMargin(c);
+  k.meta = inp.ventas!=null && c.meta>0 ? inp.ventas/c.meta*100 : null;
+  k.rotacion = (inp.cogs>0 && inp.inv>0) ? inp.cogs*12/inp.inv : null;
+  const baseDso = (inp.credito!=null && inp.credito>0) ? inp.credito : inp.ventas;
+  k.dso = (inp.cxc!=null && baseDso>0) ? inp.cxc/baseDso*30 : null;
+  const ftot = fijosSinPauta(c)+(inp.pauta||0);
+  k.runway = (inp.bancos!=null && ftot>0) ? inp.bancos/ftot : null;
+  k.margenReal = (inp.bb!=null && inp.ventas>0) ? inp.bb/inp.ventas*100 : null;
+  k.margenDev = k.margenReal!=null ? k.margenReal - c.margen : null;
+  if(inp.sueldo!=null){ k.breakeven = breakeven(inp.sueldo, fijosSinPauta(c)+(inp.pauta||0), c).be; }
+  return k;
+}
+/* semáforos: devuelve 'g'|'y'|'r'|'' */
+function sem(id,v){
+  if(v==null||isNaN(v))return '';
+  switch(id){
+    case 'rentOper': return v<0?'r':(v<15?'y':'g');
+    case 'rentEmp':  return v<0?'r':(v<10?'y':'g');
+    case 'ebitda':   return v<0?'r':(v<15000?'y':'g');
+    case 'roi':      return v<0?'r':(v<100?'y':'g');
+    case 'cac':      return v>250?'r':(v>100?'y':'g');
+    case 'roas':     return v<1/contribMargin()?'r':(v<4?'y':'g');
+    case 'meta':     return v<70?'r':(v<100?'y':'g');
+    case 'rotacion': return v<2?'r':(v<6?'y':'g');
+    case 'dso':      return v>45?'r':(v>15?'y':'g');
+    case 'runway':   return v<2?'r':(v<6?'y':'g');
+    case 'margenDev':{const a=Math.abs(v);return a>5?'r':(a>2?'y':'g');}
+  }
+  return '';
+}
+
+/* ---------- navegación ---------- */
+const PAGES=['calc','kpi','dash','arch','cfg'];
+function go(p){
+  PAGES.forEach(x=>{
+    document.getElementById('page-'+x).classList.toggle('on',x===p);
+    document.getElementById('tab-'+x).classList.toggle('on',x===p);
+  });
+  window.scrollTo(0,0);
+  if(p==='dash')renderDash();
+  if(p==='arch')renderArch();
+  if(p==='cfg')renderCfg();
+  if(p==='calc')renderAssump();
+}
+
+/* ---------- calculadora ---------- */
+let mode=1;
+function setMode(m){mode=m;
+  document.getElementById('segM1').classList.toggle('on',m===1);
+  document.getElementById('segM2').classList.toggle('on',m===2);
+  document.getElementById('mode1').style.display=m===1?'':'none';
+  document.getElementById('mode2').style.display=m===2?'':'none';
+}
+function calcM1(){
+  const sueldo=num('m1sueldo')||0, ventas=num('m1ventas');
+  const fijos=fijosTotal();
+  const b=breakeven(sueldo,fijos);
+  const ordenes=cfg.ticket>0?Math.ceil(b.be/cfg.ticket):null;
+  let h=`<div class="hero"><div class="hlab">🎯 Ventas necesarias del mes</div>
+    <div class="hval">${fmtQ(b.be)}</div>
+    <div class="hsub">para que cada socio gane ${fmtQ(sueldo)} + reserva ${fmtN(cfg.reserva,0)}%${ordenes?` · ≈ ${ordenes.toLocaleString('es-GT')} órdenes (ticket ${fmtQ(cfg.ticket)})`:''}</div></div>`;
+  h+=`<div class="row"><span class="k">Resultado deseado (2 socios)</span><span class="v">${fmtQ(b.resultadoDeseado)}</span></div>`;
+  h+=`<div class="row"><span class="k">Disponible necesario (antes de reserva ${fmtN(cfg.reserva,0)}%)</span><span class="v">${fmtQ(b.disponibleNecesario)}</span></div>`;
+  h+=`<div class="row"><span class="k">Margen necesario (+ fijos ${fmtQ(fijos)})</span><span class="v">${fmtQ(b.margenNecesario)}</span></div>`;
+  if(ventas!=null){
+    const r=resultadoDeVentas(ventas,fijos);
+    const delta=r.porSocio - sueldo;
+    const cls=delta<0?'neg':'pos';
+    h+=`<h3>Con tus ventas de ${fmtQ(ventas)}</h3>`;
+    h+=`<div class="row"><span class="k">Resultado por socio</span><span class="v ${r.porSocio<0?'neg':''}">${fmtQ(r.porSocio)}</span></div>`;
+    h+=`<div class="row"><span class="k">${delta<0?'❌ Déficit':'✅ Superávit'} vs sueldo deseado</span><span class="v ${cls}">${fmtQ(delta)}</span></div>`;
+    h+=`<div class="row"><span class="k">% del breakeven alcanzado</span><span class="v">${fmtPct(ventas/b.be*100)}</span></div>`;
+  }
+  document.getElementById('m1out').innerHTML=h;
+}
+function calcM2(){
+  const ventas=num('m2ventas'), bb=num('m2bb');
+  const el=document.getElementById('m2out');
+  if(ventas==null&&bb==null){el.innerHTML='<p class="muted">Ingresa tus ventas del mes o tu beneficio bruto real.</p>';return;}
+  const fijos=fijosTotal();
+  let mc, mcRows='';
+  if(bb!=null){
+    // BB real de Zoho: restar comisiones (5.6% efectivo) porque Zoho no las incluye en el BB
+    const ventasBase = ventas!=null ? ventas : (cfg.margen>0 ? bb/(cfg.margen/100) : 0);
+    const comis = ventasBase*cfg.comision/100;
+    mc = bb - comis;
+    mcRows+=`<div class="row"><span class="k">Beneficio bruto real (Zoho, efectivo)</span><span class="v">${fmtQ(bb)}</span></div>`;
+    mcRows+=`<div class="row"><span class="k">(−) Comisiones ${fmtN(cfg.comision,1)}% ${ventas!=null?'sobre ventas':'sobre ventas estimadas '+fmtQ(ventasBase)}</span><span class="v">${fmtQ(-comis)}</span></div>`;
+    mcRows+=`<div class="row"><span class="k">Margen de contribución real</span><span class="v">${fmtQ(mc)}</span></div>`;
+  } else {
+    mc = ventas*contribMargin();
+    mcRows+=`<div class="row"><span class="k">Margen de contribución estimado (${fmtN(contribMargin()*100,1)}%)</span><span class="v">${fmtQ(mc)}</span></div>`;
+  }
+  const disponible = mc - fijos;
+  const reserva = disponible>0 ? disponible*cfg.reserva/100 : 0;
+  const resultado = disponible - reserva;
+  const porSocio = resultado/2;
+  let h=`<div class="hero ${porSocio<0?'bad':'good'}"><div class="hlab">💰 Gana cada socio (50/50) ${bb!=null?'· con BB real':'· estimado'}</div>
+    <div class="hval">${fmtQ(porSocio)}</div>
+    <div class="hsub">${porSocio<0?'Déficit: no se cubren los costos fijos del mes':'Ya descontada la reserva del '+fmtN(cfg.reserva,0)+'%'}</div></div>`;
+  h+=mcRows;
+  h+=`<div class="row"><span class="k">(−) Costos fijos</span><span class="v">${fmtQ(-fijos)}</span></div>`;
+  h+=`<div class="row"><span class="k">Disponible antes de reserva</span><span class="v ${disponible<0?'neg':''}">${fmtQ(disponible)}</span></div>`;
+  h+=`<div class="row"><span class="k">(−) Reserva ${fmtN(cfg.reserva,0)}% (impuestos/innovación/emergencia)</span><span class="v">${fmtQ(-reserva)}</span></div>`;
+  h+=`<div class="row"><span class="k" style="font-weight:700">Resultado final (se reparte 50/50)</span><span class="v big ${resultado<0?'neg':'pos'}">${fmtQ(resultado)}</span></div>`;
+  h+=`<p class="muted" style="margin-top:6px">El sueldo NO se descuenta como costo fijo: esto es el resultado bruto que se reparte.</p>`;
+  el.innerHTML=h;
+}
+/* costos rápidos (pauta y fulfillment) desde la calculadora */
+function setCostQuick(id,v){
+  const c=cfg.costos.find(x=>x.id===id); if(!c)return;
+  c.m=parseFloat(v)||0; persist();
+  document.getElementById('qcTotal').textContent=fmtQ(fijosTotal());
+  const a=document.getElementById('calcAssump'); if(a) refreshAssumpOnly();
+  calcM1(); calcM2(); renderKPIs();
+  const ct=document.getElementById('costTotal'); if(ct) ct.textContent=fmtQ(fijosTotal());
+}
+function renderQuickCosts(){
+  const g=id=>cfg.costos.find(x=>x.id===id);
+  document.getElementById('qcPauta').value=g('pauta')?g('pauta').m:'';
+  document.getElementById('qcFulfill').value=g('fulfill')?g('fulfill').m:'';
+  document.getElementById('qcTotal').textContent=fmtQ(fijosTotal());
+}
+function refreshAssumpOnly(){
+  const cm=contribMargin();
+  document.getElementById('calcAssump').innerHTML=
+   `<div class="row"><span class="k">Margen bruto estándar</span><span class="v">${fmtPct(cfg.margen)}</span></div>
+    <div class="row"><span class="k">Comisión efectiva</span><span class="v">${fmtPct(cfg.comision)}</span></div>
+    <div class="row"><span class="k">Margen de contribución</span><span class="v">${fmtPct(cm*100)}</span></div>
+    <div class="row"><span class="k">Costos fijos (sin socios)</span><span class="v">${fmtQ(fijosTotal())}</span></div>
+    <div class="row"><span class="k">Reserva</span><span class="v">${fmtPct(cfg.reserva)}</span></div>
+    <div class="row"><span class="k">ROAS mínimo rentable</span><span class="v">${fmtN(1/cm,2)}x</span></div>`;
+}
+function renderAssump(){
+  refreshAssumpOnly(); renderQuickCosts(); calcM1(); calcM2();
+}
+/* ================= KPIs ================= */
+const KPI_DEFS=[
+ {id:'rentOper', ico:'📈', col:'--blue',   name:'1 · Rentabilidad operativa', fmt:v=>fmtPct(v), sub:'disponible / ventas · 🟢 ≥15%'},
+ {id:'rentEmp',  ico:'🏢', col:'--indigo', name:'2 · Rentabilidad empresarial', fmt:v=>fmtPct(v), sub:'resultado final / ventas · 🟢 ≥10%'},
+ {id:'ebitda',   ico:'💵', col:'--mint',   name:'3 · EBITDA (aprox.)', fmt:v=>fmtQ(v), sub:'disponible + interés cuotas · 🟢 ≥Q15,000.00'},
+ {id:'roi',      ico:'🚀', col:'--purple', name:'4 · ROI mensual', fmt:v=>fmtPct(v), sub:'resultado / (pauta+capital) · 🟢 ≥100%'},
+ {id:'cac',      ico:'🧲', col:'--pink',   name:'5 · CAC', fmt:v=>fmtQ(v), sub:'pauta / clientes NUEVOS · 🟢 ≤Q100.00'},
+ {id:'roas',     ico:'📣', col:'--orange', name:'6 · ROAS', fmt:v=>v==null?'—':fmtN(v,2)+'x', sub:'ventas redes / pauta · mín. rentable ≈1.84x · 🟢 ≥4x'},
+ {id:'meta',     ico:'🎯', col:'--teal',   name:'7 · % Meta de ventas', fmt:v=>fmtPct(v), sub:'vs meta mensual · 🟢 ≥100%'},
+ {id:'rotacion', ico:'📦', col:'--orange', name:'8 · Rotación inventario', fmt:v=>v==null?'—':fmtN(v,2)+'x/año', sub:'COGS×12 / inventario · 🟢 ≥6x'},
+ {id:'dso',      ico:'⏱️', col:'--indigo', name:'9 · DSO días de cobro', fmt:v=>v==null?'—':fmtN(v,1)+' días', sub:'CXC / ventas crédito (o totales) × 30 · 🟢 ≤15 días'},
+ {id:'runway',   ico:'🛟', col:'--blue',   name:'10 · Runway', fmt:v=>v==null?'—':fmtN(v,1)+' meses', sub:'efectivo / fijos totales · 🟢 ≥6 meses'},
+ {id:'margenDev',ico:'⚖️', col:'--purple', name:'11 · Margen real vs estándar', fmt:v=>v==null?'—':(v>0?'+':'')+fmtN(v,1)+' pts', sub:'desviación vs modelo · 🟢 ≤±2 pts'}
+];
+function readInputs(){
+  return { mes:document.getElementById('inMes').value||null,
+    sueldo:num('inSueldo'), ventas:num('inVentas'), bb:num('inBB'), redes:num('inRedes'),
+    pauta:num('inPauta'), capital:num('inCapital')||0, clientes:num('inClientes'),
+    cogs:num('inCOGS'), inv:num('inInv'), cxc:num('inCXC'), credito:num('inCredito'),
+    bancos:num('inBancos'), nota:document.getElementById('inNota').value||'' };
+}
+function usd2q(){ const u=num('inPautaUSD'); if(u!=null){
+  document.getElementById('inPauta').value=(u*cfg.tc).toFixed(2); renderKPIs(); } }
+function renderKPIs(){
+  const inp=readInputs(), k=computeKPIs(inp,cfg), r=resultadoReal(inp,cfg);
+  let h='';
+  if(r){
+    h+=`<div class="row"><span class="k">Beneficio bruto real</span><span class="v">${fmtQ(inp.bb)}</span></div>`;
+    h+=`<div class="row"><span class="k">(−) Comisiones (${fmtN(cfg.comision,1)}% de redes)</span><span class="v">${fmtQ(-r.comisiones)}</span></div>`;
+    h+=`<div class="row"><span class="k">(−) Costos fijos (con pauta real)</span><span class="v">${fmtQ(-r.fijos)}</span></div>`;
+    h+=`<div class="row"><span class="k">Disponible antes de reserva</span><span class="v ${r.disponible<0?'neg':''}">${fmtQ(r.disponible)}</span></div>`;
+    h+=`<div class="row"><span class="k">(−) Reserva ${fmtN(cfg.reserva,0)}%</span><span class="v">${fmtQ(-r.reserva)}</span></div>`;
+    h+=`<div class="row"><span class="k" style="font-weight:700">Resultado final</span><span class="v big ${r.resultado<0?'neg':'pos'}">${fmtQ(r.resultado)}</span></div>`;
+    h+=`<div class="row"><span class="k" style="font-weight:700">💰 Por socio (50/50)</span><span class="v big ${r.porSocio<0?'neg':'pos'}">${fmtQ(r.porSocio)}</span></div>`;
+    if(k.breakeven!=null) h+=`<div class="row"><span class="k">🎯 Breakeven (sueldo ${fmtQ(inp.sueldo)} c/u)</span><span class="v">${fmtQ(k.breakeven)}</span></div>`;
+  } else h='<p class="muted">Ingresa al menos el Beneficio Bruto real para ver el resultado.</p>';
+  document.getElementById('kpiResumen').innerHTML=h;
+  document.getElementById('kpiCards').innerHTML=KPI_DEFS.map(d=>{
+    const v=k[d.id], s=sem(d.id,v);
+    return `<div class="kpi ${s}" ${s?'':`style="--kc:var(${d.col})"`}><div class="ic" style="${s?'':`--kc:var(${d.col})`}">${d.ico}</div><div class="name">${d.name}</div><div class="val">${d.fmt(v)}</div><div class="sub">${d.sub}</div></div>`;
+  }).join('');
+}
+function saveMonth(){
+  const inp=readInputs();
+  if(!inp.mes){toast('⚠️ Selecciona el mes');return;}
+  if(inp.bb==null&&inp.ventas==null){toast('⚠️ Ingresa al menos ventas o BB');return;}
+  const k=computeKPIs(inp,cfg);
+  archive[inp.mes]={mes:inp.mes, inputs:inp, kpis:k,
+    cfgSnap:{margen:cfg.margen,comision:cfg.comision,reserva:cfg.reserva,meta:cfg.meta,
+      fijosSinPauta:fijosSinPauta(cfg)},
+    nota:inp.nota, ts:new Date().toISOString()};
+  persist(); toast('✅ '+mesLabel(inp.mes)+' guardado'); renderArch();
+}
+function mesLabel(m){ if(!m)return '—';
+  const [y,mm]=m.split('-');
+  const N=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  return N[+mm-1]+' '+y; }
+
+/* ================= ARCHIVO ================= */
+function sortedMonths(desc=true){ const ks=Object.keys(archive).sort(); return desc?ks.reverse():ks; }
+function renderArch(){
+  const ks=sortedMonths(true);
+  let h='<tr><th>Mes</th><th>Ventas</th><th>BB real</th><th>ROAS</th><th>Por socio</th><th>Nota</th><th></th></tr>';
+  if(!ks.length) h+='<tr><td colspan="7" class="muted">Sin meses guardados todavía.</td></tr>';
+  ks.forEach(m=>{
+    const s=archive[m], k=s.kpis||{}, i=s.inputs||{};
+    h+=`<tr>
+      <td><b style="cursor:pointer;color:var(--accent)" onclick="loadMonth('${m}')">${mesLabel(m)}</b></td>
+      <td>${fmtQ(i.ventas)}</td><td>${fmtQ(i.bb)}</td>
+      <td>${k.roas!=null?fmtN(k.roas,2)+'x':'—'}</td>
+      <td class="${(k.porSocio||0)<0?'neg':'pos'}">${fmtQ(k.porSocio)}</td>
+      <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis" title="${(s.nota||'').replace(/"/g,'&quot;')}">${s.nota||''}</td>
+      <td><button class="btn danger sm" onclick="delMonth('${m}')">✕</button></td></tr>`;
+  });
+  document.getElementById('archTable').innerHTML=h;
+}
+function loadMonth(m){
+  const s=archive[m]; if(!s)return; const i=s.inputs||{};
+  const set=(id,v)=>document.getElementById(id).value=(v==null?'':v);
+  set('inMes',m); set('inSueldo',i.sueldo); set('inVentas',i.ventas); set('inBB',i.bb);
+  set('inRedes',i.redes); set('inPauta',i.pauta); set('inPautaUSD','');
+  set('inCapital',i.capital||0); set('inClientes',i.clientes); set('inCOGS',i.cogs);
+  set('inInv',i.inv); set('inCXC',i.cxc); set('inCredito',i.credito); set('inBancos',i.bancos); set('inNota',s.nota||'');
+  go('kpi'); renderKPIs(); toast('📂 '+mesLabel(m)+' cargado en KPIs');
+}
+function delMonth(m){
+  if(!confirm('¿Eliminar '+mesLabel(m)+' del archivo?'))return;
+  delete archive[m]; persist(); renderArch(); toast('🗑️ Mes eliminado');
+}
+function exportJSON(){
+  const data={app:'GrupoClipFinanzas',version:1,exportado:new Date().toISOString(),config:cfg,archivo:archive};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='grupo-clip-respaldo-'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a); a.click(); a.remove(); toast('⬇️ Respaldo exportado');
+}
+function importJSON(ev){
+  const f=ev.target.files[0]; if(!f)return;
+  const rd=new FileReader();
+  rd.onload=()=>{ try{
+      const d=JSON.parse(rd.result);
+      if(d.app!=='GrupoClipFinanzas'||!d.archivo) throw 0;
+      archive={...archive,...d.archivo};
+      if(d.config) cfg=d.config;
+      persist(); renderArch(); renderCfg(); renderAssump();
+      toast('✅ Respaldo importado ('+Object.keys(d.archivo).length+' meses)');
+    }catch(e){toast('❌ Archivo no válido');} };
+  rd.readAsText(f); ev.target.value='';
+}
+
+/* ================= AJUSTES ================= */
+function renderCfg(){
+  document.getElementById('cfgMargen').value=cfg.margen;
+  document.getElementById('cfgCom').value=cfg.comision;
+  document.getElementById('cfgRes').value=cfg.reserva;
+  document.getElementById('cfgMeta').value=cfg.meta;
+  document.getElementById('cfgTC').value=cfg.tc;
+  document.getElementById('cfgInt').value=cfg.interes;
+  document.getElementById('cfgTicket').value=cfg.ticket||421;
+  document.getElementById('costList').innerHTML=cfg.costos.map((c,i)=>
+    `<div class="costrow"><span class="nm">${c.n}</span>
+     <input type="number" inputmode="decimal" value="${c.m}" onchange="setCost(${i},this.value)"></div>`).join('');
+  document.getElementById('costTotal').textContent=fmtQ(fijosTotal());
+}
+function setCost(i,v){ cfg.costos[i].m=parseFloat(v)||0; persist();
+  document.getElementById('costTotal').textContent=fmtQ(fijosTotal());
+  renderQuickCosts(); calcM1(); calcM2(); renderKPIs(); }
+function saveCfgField(f,v){ cfg[f]=parseFloat(v)||0; persist(); renderKPIs(); }
+function resetAll(){
+  if(!confirm('Esto borra TODOS los datos locales (archivo y ajustes). ¿Continuar?'))return;
+  localStorage.removeItem(LS_CFG); localStorage.removeItem(LS_ARCH); localStorage.removeItem(LS_SEED);
+  location.reload();
+}
+/* ================= DASHBOARD ================= */
+const FILTERS=[
+ {id:'mes',n:'Este mes'},{id:'mesAnt',n:'Mes anterior'},
+ {id:'tri',n:'Este trimestre'},{id:'triAnt',n:'Trim. anterior'},
+ {id:'anio',n:'Este año'},{id:'anioAnt',n:'Año anterior'},
+ {id:'todo',n:'Todo'},{id:'custom',n:'Personalizado'}];
+let curFilter='todo';
+let charts={};
+
+function ym(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+function addMonths(key,n){ const [y,m]=key.split('-').map(Number);
+  const d=new Date(y,m-1+n,1); return ym(d); }
+function monthDiff(a,b){ const [y1,m1]=a.split('-').map(Number),[y2,m2]=b.split('-').map(Number);
+  return (y2-y1)*12+(m2-m1); }
+function filterRange(f){
+  const now=new Date(), y=now.getFullYear(), m=now.getMonth(); // 0-based
+  const q=Math.floor(m/3);
+  switch(f){
+    case 'mes':    {const k=ym(now); return [k,k];}
+    case 'mesAnt': {const k=addMonths(ym(now),-1); return [k,k];}
+    case 'tri':    {const a=ym(new Date(y,q*3,1)); return [a,addMonths(a,2)];}
+    case 'triAnt': {const a=ym(new Date(y,q*3-3,1)); return [a,addMonths(a,2)];}
+    case 'anio':   return [y+'-01',y+'-12'];
+    case 'anioAnt':return [(y-1)+'-01',(y-1)+'-12'];
+    case 'custom': {const a=document.getElementById('rangeFrom').value,b=document.getElementById('rangeTo').value;
+      return (a&&b&&a<=b)?[a,b]:null;}
+    default: {const ks=sortedMonths(false); return ks.length?[ks[0],ks[ks.length-1]]:null;}
+  }
+}
+function monthsIn(range){ if(!range)return[];
+  return sortedMonths(false).filter(k=>k>=range[0]&&k<=range[1]); }
+function priorRange(range){ if(!range)return null;
+  const len=monthDiff(range[0],range[1])+1;
+  return [addMonths(range[0],-len), addMonths(range[1],-len)]; }
+
+function rowFor(m){
+  const s=archive[m], i=s.inputs||{};
+  const cs=s.cfgSnap||{margen:cfg.margen,comision:cfg.comision,reserva:cfg.reserva,fijosSinPauta:fijosSinPauta(cfg)};
+  // recomputa con el snapshot de config para consistencia histórica
+  const fijos=(cs.fijosSinPauta||0)+(i.pauta||0);
+  const cm=((cs.margen||60)-(cs.comision||5.6))/100;
+  const be=i.sueldo!=null? ((i.sueldo*2)/(1-(cs.reserva||20)/100)+fijos)/cm : null;
+  let disp=null,res=null,fin=null,socio=null;
+  if(i.bb!=null){
+    const comis=(i.redes||0)*(cs.comision||5.6)/100;
+    disp=i.bb-comis-fijos;
+    res=disp>0?disp*(cs.reserva||20)/100:0;
+    fin=disp-res; socio=fin/2;
+  }
+  return {mes:m, ventas:i.ventas||0, bb:i.bb||0, pauta:i.pauta||0, redes:i.redes||0,
+    roas:(i.pauta>0&&i.redes!=null)?i.redes/i.pauta:null, roasMin:1/cm,
+    disponible:disp, reserva:res, resultado:fin, porSocio:socio, breakeven:be, nota:s.nota||''};
+}
+function agg(rows){
+  const sum=f=>rows.reduce((s,r)=>s+(r[f]||0),0);
+  const pauta=sum('pauta'), redes=sum('redes');
+  return {n:rows.length, ventas:sum('ventas'), bb:sum('bb'), pauta, redes,
+    roas:pauta>0?redes/pauta:null, resultado:sum('resultado'),
+    reserva:sum('reserva'), porSocio:sum('porSocio')};
+}
+function deltaBadge(cur,prev,invert=false){
+  if(prev==null||cur==null||prev===0)return '';
+  const pct=(cur-prev)/Math.abs(prev)*100;
+  const up=pct>=0;
+  const good=invert?!up:up;
+  return `<span class="delta ${good?'up':'dn'}">${up?'↑':'↓'} ${fmtN(Math.abs(pct),1)}%</span>`;
+}
+function setFilter(f){ curFilter=f;
+  document.getElementById('customRange').style.display=f==='custom'?'':'none';
+  renderDash(); }
+function renderFilterChips(){
+  document.getElementById('filterChips').innerHTML=FILTERS.map(f=>
+   `<button class="chip ${curFilter===f.id?'on':''}" onclick="setFilter('${f.id}')">${f.n}</button>`).join('');
+}
+function renderDash(){
+  renderFilterChips();
+  const range=filterRange(curFilter);
+  const months=monthsIn(range);
+  const rows=months.map(rowFor);
+  const a=agg(rows);
+  const cmp=document.getElementById('cmpToggle').checked;
+  let p=null;
+  if(cmp&&range){ p=agg(monthsIn(priorRange(range)).map(rowFor)); if(!p.n)p=null; }
+  const cards=[
+    {n:'Ventas totales', col:'--blue', v:fmtQ(a.ventas), c:a.ventas, pv:p?p.ventas:null},
+    {n:'Beneficio bruto', col:'--indigo', v:fmtQ(a.bb), c:a.bb, pv:p?p.bb:null},
+    {n:'Pauta', col:'--orange', v:fmtQ(a.pauta), c:a.pauta, pv:p?p.pauta:null, inv:true},
+    {n:'ROAS', col:'--purple', v:a.roas!=null?fmtN(a.roas,2)+'x':'—', c:a.roas, pv:p?p.roas:null},
+    {n:'Resultado final', col:'--mint', v:fmtQ(a.resultado), c:a.resultado, pv:p?p.resultado:null},
+    {n:'Ganancia por socio', col:'--pink', v:fmtQ(a.porSocio), c:a.porSocio, pv:p?p.porSocio:null}];
+  document.getElementById('dashCards').innerHTML=cards.map(c=>
+   `<div class="kpi" style="--kc:var(${c.col})"><div class="name"><span class="dot" style="background:var(${c.col})"></span>${c.n}</div>
+    <div class="val" style="font-size:17px">${c.v}${cmp?deltaBadge(c.c,c.pv,c.inv):''}</div>
+    <div class="sub">${a.n} mes${a.n===1?'':'es'}${p?' · vs '+p.n+' previos':''}</div></div>`).join('');
+  drawCharts(rows);
+}
+function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+function mkChart(id,conf){ if(charts[id])charts[id].destroy();
+  charts[id]=new Chart(document.getElementById(id),conf); }
+function drawCharts(rows){
+  if(typeof Chart==='undefined')return;
+  const labels=rows.map(r=>mesLabel(r.mes));
+  const txt=css('--text2'), grid=css('--border'), acc=css('--blue')||'#007aff',
+        grn=css('--greenraw')||'#34c759', red=css('--redraw')||'#ff3b30',
+        yel=css('--orange')||'#ff9500', ind=css('--indigo')||'#5856d6';
+  Chart.defaults.color=txt; Chart.defaults.borderColor=grid; Chart.defaults.font.size=10.5;
+  const money=v=>'Q'+(v/1000).toFixed(0)+'k';
+  const base={responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{labels:{boxWidth:10,boxHeight:10}}},
+    scales:{x:{grid:{display:false}},y:{ticks:{callback:money}}}};
+  // 1. Ventas de redes vs breakeven
+  mkChart('ch1',{type:'bar',data:{labels,datasets:[
+    {label:'Ventas de redes',data:rows.map(r=>r.redes),backgroundColor:acc,borderRadius:4},
+    {label:'Breakeven',type:'line',data:rows.map(r=>r.breakeven),borderColor:red,
+     backgroundColor:red,borderDash:[5,4],pointRadius:2,tension:.2}]},options:base});
+  // 2. ROAS
+  mkChart('ch2',{type:'line',data:{labels,datasets:[
+    {label:'ROAS',data:rows.map(r=>r.roas),borderColor:acc,backgroundColor:acc,pointRadius:3,tension:.25},
+    {label:'Mínimo rentable',data:rows.map(r=>r.roasMin),borderColor:red,borderDash:[5,4],pointRadius:0},
+    {label:'Excelente (4x)',data:rows.map(()=>4),borderColor:grn,borderDash:[2,3],pointRadius:0}]},
+    options:{...base,scales:{x:{grid:{display:false}},y:{ticks:{callback:v=>v+'x'}}}}});
+  // 3. Ganancia por socio
+  mkChart('ch3',{type:'bar',data:{labels,datasets:[
+    {label:'Ganancia por socio (Q)',data:rows.map(r=>r.porSocio),
+     backgroundColor:rows.map(r=>r.porSocio>=0?grn:red),borderRadius:4}]},options:base});
+  // 4. Reserva mensual + acumulada
+  let acc2=0; const acum=rows.map(r=>acc2+=r.reserva);
+  mkChart('ch4',{type:'bar',data:{labels,datasets:[
+    {label:'Reserva del mes',data:rows.map(r=>r.reserva),backgroundColor:yel,borderRadius:4,yAxisID:'y'},
+    {label:'Reserva acumulada',type:'line',data:acum,borderColor:grn,backgroundColor:grn,
+     pointRadius:2,tension:.2,yAxisID:'y2'}]},
+    options:{...base,scales:{x:{grid:{display:false}},
+      y:{ticks:{callback:money}},
+      y2:{position:'right',grid:{display:false},ticks:{callback:money}}}}});
+}
+
+/* ================= DATOS HISTÓRICOS ================= */
+const HIST=[
+ ['2025-04',31862.42, 5045.67, 60094.49,3.21],
+ ['2025-05',11992.27, 5034.98, 17025.67,1.84],
+ ['2025-06',42501.60, 5581.22, 68787.25,9.19],
+ ['2025-07',25049.79, 4750.81, 44263.02,2.82],
+ ['2025-08',26417.73, 6576.37, 49435.47,3.39],
+ ['2025-09',48066.71, 6592.29, 68217.44,7.37],
+ ['2025-10',61826.27, 4463.16,101938.16,7.82],
+ ['2025-11',32574.35, 5864.36, 47893.82,5.08],
+ ['2025-12',65605.23,11000.64,120396.19,5.37],
+ ['2026-01',55804.86, 8047.63, 78646.81,5.92],
+ ['2026-02',42025.36, 8236.11, 63524.93,4.13],
+ ['2026-03',29499.64, 7936.81, 42892.62,1.49],
+ ['2026-04',42066.05, 6260.19, 80088.06,1.05],
+ ['2026-05',30266.50, 6760.18, 51333.10,2.52]];
+function seedHistory(){
+  if(localStorage.getItem(LS_SEED))return;
+  HIST.forEach(([m,bb,pauta,ventas,roas])=>{
+    if(archive[m])return;
+    const redes=+(pauta*roas).toFixed(2);
+    const inp={mes:m,sueldo:10000,ventas,bb,redes,pauta,capital:0,clientes:null,
+      cogs:null,inv:null,cxc:null,credito:null,bancos:null,nota:''};
+    archive[m]={mes:m,inputs:inp,kpis:computeKPIs(inp,cfg),
+      cfgSnap:{margen:cfg.margen,comision:cfg.comision,reserva:cfg.reserva,meta:cfg.meta,
+        fijosSinPauta:fijosSinPauta(cfg)},
+      nota:'(histórico precargado — costos fijos aproximados a valores actuales)',
+      ts:new Date().toISOString()};
+  });
+  localStorage.setItem(LS_SEED,'1'); persist();
+}
+
+/* ================= INICIO ================= */
+function init(){
+  seedHistory();
+  applyTheme();
+  const now=new Date();
+  document.getElementById('inMes').value=ym(now);
+  renderAssump(); renderKPIs(); renderCfg(); renderArch(); renderFilterChips();
+  if(window.matchMedia){ window.matchMedia('(prefers-color-scheme: dark)')
+    .addEventListener('change',()=>{ if(theme==='auto') applyTheme(); }); }
+}
+init();
+</script>
+</body>
+</html>
